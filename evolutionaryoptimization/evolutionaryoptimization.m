@@ -168,7 +168,10 @@ for i_update=1:n_updates
     subplot(n_dofs,4,1:4:n_dofs*4)
     hold off
 
-    plotlearninghistory(learning_history);
+    % Plot only most recent 10 history entries    
+    history_length = length(learning_history);
+    plotlearninghistory(learning_history(max(1,history_length-10):history_length));
+    fprintf('Pausing... press key to continue.\n')
     pause
   end
   

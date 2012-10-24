@@ -26,6 +26,7 @@ for i_dof=1:n_dofs %#ok<FXUP>
     box on
   else
     subplot(n_dofs,4,(i_dof-1)*4 + 2)
+    cla
   end
   
   for hh=1:length(learning_history)
@@ -76,8 +77,8 @@ for i_dof=1:n_dofs %#ok<FXUP>
     end
 
 
-    axis equal
     axis square
+    axis equal
     %axis([-7 17 -7 17])
     %plot(0,0,'*k')
     xlabel('\theta_1')
