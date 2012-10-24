@@ -10,8 +10,6 @@ addpath(genpath('tasks/'))
 n_dofs = 2;
 arm_length = 1;
 task = task_multidofviapoint(n_dofs,arm_length);
-% Joint project with Manuel Lopes
-%task = task_predictme_simple(g,y0);
 
 % Initial covariance matrix for exploration 
 covar_init = 5*eye(size(task.theta_init,2));

@@ -29,7 +29,8 @@ for i_dof=1:n_dofs %#ok<FXUP>
     cla
   end
   
-  for hh=1:length(learning_history)
+  % Plot only most recent 10 history entries
+  for hh=[ 1 max(1,length(learning_history)-10):length(learning_history) ]
 
     theta = learning_history(hh).theta;
     theta_eps = learning_history(hh).theta_eps;
