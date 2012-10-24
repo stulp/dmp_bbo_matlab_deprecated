@@ -74,12 +74,12 @@ for i_dof=1:n_dofs %#ok<FXUP>
       set([h_before_covar h_after_covar],'Color',0.8*ones(1,3),'LineWidth',1);
       set(h_before_theta ,'MarkerFaceColor',0.8*ones(1,3),'MarkerEdgeColor','none');
     end
-    plot(0,0,'*k')
 
 
     axis equal
     axis square
-    axis([-7 17 -7 17])
+    %axis([-7 17 -7 17])
+    %plot(0,0,'*k')
     xlabel('\theta_1')
     ylabel('\theta_2')
     

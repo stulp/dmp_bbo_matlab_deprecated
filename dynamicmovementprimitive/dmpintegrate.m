@@ -87,9 +87,6 @@ alpha_z = 14.0;
 beta_z = alpha_z/4.0;
 alpha_g = alpha_z/2.0;
 
-% Trajectory contains T time steps for each DMP dimension, for pos, vel, acc.
-trajectory.y = zeros(T,n_dim,3);
-
 %-------------------------------------------------------------------------------
 % Each dimension integrated separately
 for i_dim = 1:n_dim

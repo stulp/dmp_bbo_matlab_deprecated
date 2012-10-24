@@ -21,7 +21,7 @@ task.viapoint_time_step = round(viapoint_time_ratio*task.time/task.dt);
 
 task.order=2; % Order of the dynamic movement primitive
 % Next values optimized for minimizing acceleration in separate learning session
-task.theta_init = [37.0458   -4.2715   27.0579   13.6385 37.0458   -4.2715   27.0579   13.6385];
+task.theta_init = [37.0458   -4.2715   27.0579   13.6385; 37.0458   -4.2715   27.0579   13.6385];
 
 
 addpath dynamicmovementprimitive/
@@ -32,12 +32,12 @@ addpath dynamicmovementprimitive/
     trajectory = dmpintegrate(task.y0,task.g,theta,task.time,task.dt,task.time_exec);
 
     % Cost due to distance from viapoint
-    ys = trajectory.y(:,:,1);
+    ys = trajectory.y;
     dist_to_viapoint = sqrt(sum((ys(task.viapoint_time_step,:)-viapoint).^2));
     cost(2) = dist_to_viapoint;
     
     % Cost due to acceleration
-    ydds = trajectory.y(:,:,3);
+    ydds = trajectory.ydd;
     sum_ydd = sum((sum(ydds.^2,2)));
     cost(3) = sum_ydd/100000;
 
