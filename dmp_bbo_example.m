@@ -5,11 +5,11 @@ addpath(genpath('tasks/'))
 % Get the task to be optimized
 
 % A very simple 1-D DMP viapoint task
-%task = task_viapoint;
+task = task_viapoint;
 % The JMLR style n-DOF kinmatically simulated arm task
-n_dofs = 2;
-arm_length = 1;
-task = task_multidofviapoint(n_dofs,arm_length);
+%n_dofs = 2;
+%arm_length = 1;
+%task = task_multidofviapoint(n_dofs,arm_length);
 
 % Initial covariance matrix for exploration 
 covar_init = 5*eye(size(task.theta_init,2));
