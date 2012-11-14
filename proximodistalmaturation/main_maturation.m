@@ -16,7 +16,8 @@ for arm_type=1:n_arm_types
 end
 
 %-------------------------------------------------------------------------------
-% SENSITIVITY ANALYSIS
+fprintf('___________________________________________________________________\n')
+fprintf('SENSITIVITY ANALYSIS\n')
 
 % Points to reach to for sensitivity analysis (and optimization too)
 viapoint_xs =  0.0:0.2:1.0;
@@ -39,8 +40,10 @@ perturbation_magnitude = (pi/10);
 figure(1)
 sensitivityanalysis(link_lengths_per_arm,perturbation_magnitude,viapoints);
 
+
 %-------------------------------------------------------------------------------
-% UNCERTAINTY HANDLING
+fprintf('___________________________________________________________________\n')
+fprintf('UNCERTAINTY HANDLING\n')
 
 % Number of experiments for uncertaintly handling
 n_experiments_uncertaintyhandling = 100;
@@ -51,16 +54,16 @@ end
 figure(2)
 if (force_redo_experiments || ~exist('results_uncertaintyhandling','var') )
   % Do experiments
-  results_uncertaintyhandling = uncertaintyhandling(link_lengths_per_arm,n_experiments_uncertaintyhandling);
+  results_uncertaintyhandling = uncertaintyhandling(link_lengths_per_arm,viapoints,n_experiments_uncertaintyhandling);
 else
   % Visualize experiments
   uncertaintyhandlingvisualize(link_lengths_per_arm,results_uncertaintyhandling);
 end
 
 
-
 %-------------------------------------------------------------------------------
-% OPTIMIZATION
+fprintf('___________________________________________________________________\n')
+fprintf('OPTIMIZATION\n')
 
 % Settings for optimization
 n_experiments_per_task = 10;

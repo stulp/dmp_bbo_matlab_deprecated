@@ -1,4 +1,4 @@
-function results = uncertaintyhandling(link_lengths_per_arm,n_experiments)
+function results = uncertaintyhandling(link_lengths_per_arm,viapoints,n_experiments)
 
 % For each combination of joints:
 % sample perturbation of both from a Gaussian
@@ -10,71 +10,74 @@ function results = uncertaintyhandling(link_lengths_per_arm,n_experiments)
 % How often does 2 change the rank?
 % i.e. how often does C or D lie between A-B
 
+n_viapoints = size(viapoints,1);
+
 n_arm_types = size(link_lengths_per_arm,1);
 for arm_type=1:n_arm_types
   link_lengths = link_lengths_per_arm(arm_type,:);
   n_dofs = length(link_lengths);
-  
+
   results{arm_type} = nan*ones(n_dofs,n_dofs);
 
-
   plot_me=0;
-  viapoint_x = 0.5;
-  viapoint_y = 0.5;
 
   for which_angle_1=1:(n_dofs-1)
     for which_angle_2=(which_angle_1+1):n_dofs
-      fprintf('%d %d ',which_angle_1,which_angle_2);
+      fprintf('arm_type = %d/%d  proximal=%d/%d distal=%d/%d ',arm_type,n_arm_types,which_angle_1,n_dofs-1,which_angle_2,n_dofs);
 
       results{arm_type}(which_angle_1,which_angle_2) = 0;
 
-      for experiments=1:n_experiments
-        if (mod(experiments,10)==1)
-          fprintf('*')
-        end
-        clf
-        cur_results = zeros(2,2);
-        for angle_1_on_off=0:1
-          angle_1 = pi/10*randn;
-          for angle_2_on_off=0:1 % angle_1_on_off:1 % 0:1
-            angle_2 = pi/10*randn;
-            angles = zeros(1,n_dofs);
-            %angles(which_angle_1) = angle_1_on_off*angle_1;
-            %angles(which_angle_2) = angle_2_on_off*angle_2;
-            angles(which_angle_1) = angle_1;
-            angles(which_angle_2) = angle_2;
-            hold on
-            x = getarmpos(angles,link_lengths,1,plot_me);
-            viapoint = [viapoint_x viapoint_y]';
-            if (plot_me)
-              hold on
-              plot(viapoint_x,viapoint_y,'o')
-            end
-            cur_results(angle_1_on_off+1,angle_2_on_off+1) = sqrt(sum((x-viapoint).^2));
+      for i_viapoint=1:n_viapoints
+        for experiments=1:n_experiments
+          if (mod(experiments,10)==1)
+            fprintf('*')
           end
-        end
-        %fprintf(' off/off  off/on\n ON/OFF   on/on')
-        %cur_results
-        if (cur_results(1,1)<cur_results(2,1) && cur_results(1,2)<cur_results(2,2))
-          fprintf('D')
-          results{arm_type}(which_angle_1,which_angle_2) = results{arm_type}(which_angle_1,which_angle_2) + 1;
-        elseif (cur_results(1,1)>cur_results(2,1) && cur_results(1,2)>cur_results(2,2))
-          fprintf('D')
-          results{arm_type}(which_angle_1,which_angle_2) = results{arm_type}(which_angle_1,which_angle_2) + 1;
-        end
+          clf
+          cur_results = zeros(2,2);
+          for angle_1_on_off=0:1
+            angle_1 = pi/10*randn;
+            for angle_2_on_off=0:1 % angle_1_on_off:1 % 0:1
+              angle_2 = pi/10*randn;
+              angles = zeros(1,n_dofs);
+              %angles(which_angle_1) = angle_1_on_off*angle_1;
+              %angles(which_angle_2) = angle_2_on_off*angle_2;
+              angles(which_angle_1) = angle_1;
+              angles(which_angle_2) = angle_2;
+              hold on
+              x = getarmpos(angles,link_lengths,1,plot_me);
+              viapoint = viapoints(i_viapoint,:)';
+              if (plot_me)
+                hold on
+                plot(viapoint(1),viapoint(2),'o')
+              end
+              cur_results(angle_1_on_off+1,angle_2_on_off+1) = sqrt(sum((x-viapoint).^2));
+            end
+          end
+          %fprintf(' off/off  off/on\n ON/OFF   on/on')
+          %cur_results
+          if (cur_results(1,1)<cur_results(2,1) && cur_results(1,2)<cur_results(2,2))
+            results{arm_type}(which_angle_1,which_angle_2) = results{arm_type}(which_angle_1,which_angle_2) + 1;
+          elseif (cur_results(1,1)>cur_results(2,1) && cur_results(1,2)>cur_results(2,2))
+            results{arm_type}(which_angle_1,which_angle_2) = results{arm_type}(which_angle_1,which_angle_2) + 1;
+          end
 
-        if (plot_me)
-          pause(1)
+          if (plot_me)
+            axis equal
+            axis([-0.5 1.1 -0.5 1.1])
+            pause
+          end
         end
       end
       fprintf('\n')
     end
   end
-  results{arm_type} = results{arm_type}/n_experiments;
+  results{arm_type} = results{arm_type}/(n_viapoints*n_experiments);
+
+  % Plot results
+  uncertaintyhandlingvisualize(link_lengths_per_arm,results);
+  drawnow
 end
 
 
-% Plot results
-uncertaintyhandlingvisualize(link_lengths_per_arm,results);
 
 end

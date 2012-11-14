@@ -2,7 +2,7 @@ function uncertaintyhandlingvisualize(link_lengths_per_arm,results)
 
 clf
 n_arm_types = size(link_lengths_per_arm,1);
-for arm_type=1:n_arm_types
+for arm_type=1:length(results)
   link_lengths = link_lengths_per_arm(arm_type,:);
   n_dofs = length(link_lengths);
 
