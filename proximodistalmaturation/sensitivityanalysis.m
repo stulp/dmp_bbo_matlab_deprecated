@@ -6,8 +6,8 @@ n_arm_types = getlinklengths;
 n_dofs = 6;
 arm_length = 1;
 
-viapoint_xs = linspace(0,1,10);
-viapoint_ys = linspace(0.1,1,9);
+viapoint_xs =  0.0:0.2:1.0;
+viapoint_ys =  0.2:0.2:1.0;
 n_viapoints = 0;
 clear viapoints;
 for viapoint_x=viapoint_xs
