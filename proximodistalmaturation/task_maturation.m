@@ -81,8 +81,8 @@ task.viapoint = viapoint;
 
     summary_costs = [sum(mean(costs_acc)) sum(mean(costs_vel)) sum(mean(costs_lim)) sum(mean(costs_via)) sum(mean(costs)) ];
     summary_costs_norm  = summary_costs/sum(mean(costs));
-    fprintf('\t acc=% 3d + vel=% 3d + lim=% 3d + via=% 3d  = % 2d    ',round(100*summary_costs_norm));
-    fprintf('\t acc=%2.4f + vel=%2.4f + lim=%2.4f + via=%2.4f = %2.4f\n',(summary_costs));
+    %fprintf('\t acc=% 3d + vel=% 3d + lim=% 3d + via=% 3d  = % 2d    ',round(100*summary_costs_norm));
+    %fprintf('\t acc=%2.4f + vel=%2.4f + lim=%2.4f + via=%2.4f = %2.4f\n',(summary_costs));
 
     if (plot_me)
       getarmpos(trajectory.y,task.link_lengths,n_timesteps,plot_me);
@@ -95,26 +95,44 @@ task.viapoint = viapoint;
 
   end
 
-  function plotlearninghistorymaturation(learning_history)
-    n_updates = length(learning_history);
-    if (n_updates==1)
-      clf
+  function plotlearninghistorymaturation(learning_histories)
+    if (isstruct(learning_histories))
+      % You can pass either one learning history (a struct), or a cell array of
+      % learning histories. In the former case, convert the struct to a cell
+      % array with one entry.
+      tmp{1} = learning_histories;
+      learning_histories = tmp;
     end
 
-    n_dofs = size(learning_history(1).theta,1);
-    exploration_curves = zeros(n_updates,n_dofs);
-    for i_dof=1:n_dofs %#ok<FXUP>
-      for hh=1:length(learning_history)
-        exploration_curves(hh,i_dof) = real(max(eig(squeeze(learning_history(hh).covar(i_dof,:,:))))); % HACK
+    n_histories = length(learning_histories);
+    n_updates = length(learning_histories{1});
+    n_dofs = size(learning_histories{1}(1).theta,1);
+    
+    exploration_curves = zeros(n_histories,n_updates,n_dofs);
+    for i_history=1:n_histories %#ok<FXUP>
+      learning_history = learning_histories{i_history};
+      for i_dof=1:n_dofs %#ok<FXUP>
+        for hh=1:length(learning_history)
+          exploration_curves(i_history,hh,i_dof) = real(max(eig(squeeze(learning_history(hh).covar(i_dof,:,:))))); % HACK
+        end
       end
     end
 
+    % Take mean over all experiments
+    exploration_curves = squeeze(mean(exploration_curves,1));
+    % Compute cumulative exploration magnitudes
+    cumsum_exploration_curves = cumsum(exploration_curves,2);
+
+    %----------------------------------------------------------
+    % Start plotting things
     for ii=1:n_dofs
       labels{ii} = sprintf('joint %d',ii);
     end
 
-    cumsum_exploration_curves = cumsum(exploration_curves,2);
-
+    if (n_updates==1)
+      clf
+    end
+    
     %----------------------------------------------------------
     % Set colormap to have 'n_dofs' entries
     colormap(ones(n_dofs,3))
@@ -130,7 +148,9 @@ task.viapoint = viapoint;
     % Raw data
     subplot(1,2,1)
     plot(exploration_curves,'LineWidth',2)
-    legend(labels,'Location','EastOutside')
+    if (n_updates>1)
+      legend(labels,'Location','EastOutside')
+    end
     axis tight
 
     %----------------------------------------------------------
@@ -147,7 +167,8 @@ task.viapoint = viapoint;
     title('Exploration magnitude over time')
     xlabel('number of updates')
     ylabel('exploration magnitude')
-    
+
+    drawnow
   end
 
 end

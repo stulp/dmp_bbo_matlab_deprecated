@@ -1,8 +1,5 @@
-viapoint = [0.5 0.5]';
-armtype = 2;
-task = task_maturation(viapoint,armtype);
 
-n_updates = 10;
+n_updates = 20;
 K = 20;
 weighting_method = 3;
 eliteness = 10;
@@ -19,5 +16,25 @@ end
 
 covar_init = eye(task.n_basisfunctions);
 
-[theta_opt learning_history] = evolutionaryoptimization(task,task.theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds);
+n_experiments_per_task = 5; 
+
+viapoint = [0 1]';
+clear learning_histories
+for arm_type=1:3
+  task = task_maturation(viapoint,armtype);
+  
+  for i_experiment=1:n_experiments_per_task
+    fprintf('arm_type=%d, i_experiment=%d\n',arm_type,i_experiment);
+    
+    [theta_opt learning_history] = evolutionaryoptimization(task,task.theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds);
+    learning_histories{arm_type,i_experiment} = learning_history;
+  end
+  
+  figure(arm_type)
+  clf
+  title(arm_type);
+  %task.plotlearninghistorycustom(learning_histories{arm_type,1});
+  task.plotlearninghistorycustom({learning_histories{arm_type,:}});
+  drawnow
+end
 
