@@ -1,10 +1,19 @@
+%-------------------------------------------------------------------------------
+% GENERAL SETTINGS 
+
 impatient = 1; % 0 -> do everything, 1 -> do less, and thus quicker
+force_redo_experiments = 0; % 0 -> visualize results if already available
 
 % Arm settings
 n_dofs = 6;
 arm_length = 1;
 
-% Points to reach to
+
+
+%-------------------------------------------------------------------------------
+% SENSITIVITY ANALYSIS
+
+% Points to reach to for sensitivity analysis (and optimization too)
 viapoint_xs =  0.0:0.2:1.0;
 viapoint_ys =  0.2:0.2:1.0;
 n_viapoints = 0;
@@ -20,37 +29,57 @@ for viapoint_x=viapoint_xs
   end
 end
 
-%-------------------------------------------------------------------------------
 figure(1)
 sensitivityanalysis(n_dofs,arm_length,viapoints)
 
 
 %-------------------------------------------------------------------------------
+% UNCERTAINTY HANDLING
+
+% Number of experiments for uncertaintly handling
+n_experiments_uncertaintyhandling = 100;
+if (exist('impatient','var') && impatient)
+  n_experiments_uncertaintyhandling = 10;
+end
+
 figure(2)
-if (~exist('results_uncertaintyhandling','var'))
-  n_experiments = 100;
-  if (exist('impatient','var') && impatient)
-    n_experiments = 10;
-  end
-  results_uncertaintyhandling = uncertaintyhandling(n_experiments);
+if (force_redo_experiments || ~exist('results_uncertaintyhandling','var') )
+  % Do experiments
+  results_uncertaintyhandling = uncertaintyhandling(n_dofs,arm_length,n_experiments_uncertaintyhandling);
 else
-  results_uncertaintyhandling = uncertaintyhandling(results_uncertaintyhandling);
+  % Visualize experiments
+  uncertaintyhandlingvisualize(n_dofs,arm_length,results_uncertaintyhandling);
 end
 
 
 %-------------------------------------------------------------------------------
-if (~exist('learning_histories','var'))
-  figure(3)
-  n_experiments_per_task = 10;
-  n_updates = 20;
-  if (exist('impatient','var') && impatient)
-    % Do limited number of experiments per task
-    n_experiments_per_task = 2;
-    % Reduce number of viapoints to 5
-    if (n_viapoints>5)
-      viapoints = viapoints(round(linspace(1,n_viapoints,5)),:);
-      n_viapoints = size(viapoints,1);
-    end
+% OPTIMIZATION
+
+% Settings for optimization
+n_experiments_per_task = 10;
+n_updates = 20;
+if (exist('impatient','var') && impatient)
+  % Do limited number of experiments per task
+  n_experiments_per_task = 2;
+  % Reduce number of viapoints to 5
+  if (n_viapoints>5)
+    viapoints = viapoints(round(linspace(1,n_viapoints,5)),:);
+    n_viapoints = size(viapoints,1);
   end
+end
+
+figure(3)
+if (force_redo_experiments || ~exist('learning_histories','var') )
+  % Do experiments
   learning_histories = maturationoptimization(viapoints,n_experiments_per_task,n_updates);
+else
+  % Visualize experiments
+  n_arm_types = getlinklengths;
+  for arm_type=1:n_arm_types
+    subplot(1,n_arm_types,arm_type)
+    title(sprintf('arm type = %d',arm_type));
+    current_histories = {learning_histories{arm_type,:,:}};
+    plotlearninghistorymaturation(current_histories);
+  end
+  
 end

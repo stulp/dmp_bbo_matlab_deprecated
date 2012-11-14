@@ -1,4 +1,4 @@
-function learning_histories = maturationoptimization(viapoints,n_experiments_per_task,n_updates)
+function [ learning_histories viapoints ] = maturationoptimization(viapoints,n_experiments_per_task,n_updates)
 if (nargin<1), viapoints = [0 1; 0 0.5; 0 0]; end
 if (nargin<2), n_experiments_per_task = 10; end
 if (nargin<3), n_updates = 20; end
@@ -41,7 +41,7 @@ for arm_type=1:n_arm_types
   subplot(1,n_arm_types,arm_type)
   title(sprintf('arm type = %d',arm_type));
   current_histories = {learning_histories{arm_type,:,:}};
-  task.plotlearninghistorycustom(current_histories);
+  plotlearninghistorymaturation(current_histories);
   drawnow
 end
 

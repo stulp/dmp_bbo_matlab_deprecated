@@ -26,14 +26,29 @@ n_arm_types = getlinklengths;
 for arm_type=1:n_arm_types
   link_lengths = getlinklengths(arm_type,n_dofs,arm_length);
 
+  plot_me = 0;
+  for which_angle=1:n_dofs
+    angles = zeros(1,n_dofs);
+    for angle_sign=1:3
+      angles(which_angle) = (angle_sign-2)*(pi/10);
+      x = getarmpos(angles,link_lengths,1,plot_me);
+      for i_viapoint = 1:n_viapoints
+        dist_to_viapoint(which_angle,angle_sign,i_viapoint) =  sqrt(sum((x-viapoints(i_viapoint,:)').^2));
+      end
+    end
+  end
+  cur_dists_plus = squeeze(dist_to_viapoint(:,1,:) - dist_to_viapoint(:,2,:));
+  cur_dists_minus = squeeze(dist_to_viapoint(:,3,:) - dist_to_viapoint(:,2,:));
+
   subplot(2,n_arm_types,arm_type)
+  plot_me = 2;
   plot(viapoints(:,1),viapoints(:,2),'.')
   for which_angle=1:n_dofs
     angles = zeros(1,n_dofs);
     for angle_sign=1:3
       angles(which_angle) = (angle_sign-2)*(pi/10);
       hold on
-      x = getarmpos(angles,link_lengths,1,2);
+      x = getarmpos(angles,link_lengths,1,plot_me);
       for i_viapoint = 1:n_viapoints
         dist_to_viapoint(which_angle,angle_sign,i_viapoint) =  sqrt(sum((x-viapoints(i_viapoint,:)').^2));
       end
@@ -49,8 +64,6 @@ for arm_type=1:n_arm_types
   subplot(2,n_arm_types,n_arm_types+arm_type)
   cumsum_link_lengths = cumsum(link_lengths);
   cumsum_link_lengths = [0 cumsum_link_lengths(1:end-1)];
-  cur_dists_plus = squeeze(dist_to_viapoint(:,1,:) - dist_to_viapoint(:,2,:));
-  cur_dists_minus = squeeze(dist_to_viapoint(:,3,:) - dist_to_viapoint(:,2,:));
   for which_angle=1:n_dofs
     plot(cumsum_link_lengths(which_angle)*ones(1,2),[mean(cur_dists_minus(which_angle,:)) mean(cur_dists_plus(which_angle,:))],'LineWidth',3)
     hold on
