@@ -114,6 +114,7 @@ for arm_type=1:n_arm_types
   set(gca,'XTick',2:n_dofs)
   view(-45,20);
   zlim([0 1])
+  colormap(gray)
   drawnow
 end
 

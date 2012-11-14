@@ -146,15 +146,16 @@ task.viapoint = viapoint;
 
     %----------------------------------------------------------
     % Raw data
-    subplot(1,2,1)
+    %subplot(1,2,1)
     plot(exploration_curves,'LineWidth',2)
     if (n_updates>1)
-      legend(labels,'Location','EastOutside')
+      legend(labels,'Location','NorthEast')
     end
     axis tight
 
     %----------------------------------------------------------
     % Normalized and plot as patches
+    if (0)
     subplot(1,2,2)
     patch_pad = cumsum_exploration_curves;
     for ii=n_dofs:-1:1
@@ -167,7 +168,8 @@ task.viapoint = viapoint;
     title('Exploration magnitude over time')
     xlabel('number of updates')
     ylabel('exploration magnitude')
-
+    end
+    
     drawnow
   end
 

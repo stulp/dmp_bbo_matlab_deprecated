@@ -1,3 +1,8 @@
+function learning_histories = maturationoptimization(viapoints,n_experiments_per_task,n_updates)
+if (nargin<1), viapoints = [0 1; 0 0.5; 0 0]; end
+if (nargin<2), n_experiments_per_task = 10; end
+if (nargin<3), n_updates = 20; end
+
 task = task_maturation;
 
 K = 20;
@@ -16,33 +21,25 @@ end
 
 covar_init = eye(task.n_basisfunctions);
 
-n_updates = 20;
-n_experiments_per_task = 10;
-
-if (~exist('viapoints','var'))
-  viapoints = [0 1; 0 0.5; 0 0];
-end
 n_viapoints = size(viapoints,1);
 
-clear learning_histories
-for arm_type=1:3
+n_arm_types = getlinklengths;
+for arm_type=1:n_arm_types
   task = task_maturation(viapoints(1,:)',arm_type);
 
   for i_viapoint = 1:n_viapoints
     task.viapoint = viapoints(i_viapoint,:)';
     
     for i_experiment=1:n_experiments_per_task
-      fprintf('arm_type=%d, viapoint=[%1.2f %1.2f] (%d/%d), i_experiment=%d\n',arm_type,task.viapoint,i_viapoint,n_viapoints, i_experiment);
+      fprintf('arm_type=%d/%d, viapoint=[%1.2f %1.2f] (%d/%d), i_experiment=%d/%d \n',arm_type,n_arm_types,task.viapoint,i_viapoint,n_viapoints, i_experiment,n_experiments_per_task);
 
       [theta_opt learning_history] = evolutionaryoptimization(task,task.theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds);
       learning_histories{arm_type,i_viapoint,i_experiment} = learning_history;
     end
   end
 
-  figure(arm_type)
-  clf
-  title(arm_type);
-  %task.plotlearninghistorycustom(learning_histories{arm_type,1});
+  subplot(1,n_arm_types,arm_type)
+  title(sprintf('arm type = %d',arm_type));
   current_histories = {learning_histories{arm_type,:,:}};
   task.plotlearninghistorycustom(current_histories);
   drawnow
