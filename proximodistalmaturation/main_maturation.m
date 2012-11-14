@@ -67,10 +67,11 @@ fprintf('OPTIMIZATION\n')
 
 % Settings for optimization
 n_experiments_per_task = 10;
-n_updates = 20;
+n_updates = 100;
 if (exist('impatient','var') && impatient)
-  % Do limited number of experiments per task
-  n_experiments_per_task = 2;
+  % Do limited number of updates and experiments per task
+  n_updates = 20;
+  n_experiments_per_task = 5;
   % Reduce number of viapoints to 5
   if (n_viapoints>5)
     viapoints = viapoints(round(linspace(1,n_viapoints,5)),:);
@@ -79,17 +80,10 @@ if (exist('impatient','var') && impatient)
 end
 
 figure(3)
-if (force_redo_experiments || ~exist('learning_histories','var') )
+if (force_redo_experiments || ~exist('results_optimization','var') )
   % Do experiments
-  learning_histories = maturationoptimization(link_lengths_per_arm,viapoints,n_experiments_per_task,n_updates);
+  results_optimization = maturationoptimization(link_lengths_per_arm,viapoints,n_experiments_per_task,n_updates);
 else
   % Visualize experiments
-  n_arm_types = getlinklengths;
-  for arm_type=1:n_arm_types
-    subplot(1,n_arm_types,arm_type)
-    title(sprintf('arm type = %d',arm_type));
-    current_histories = {learning_histories{arm_type,:,:}};
-    plotlearninghistorymaturation(current_histories);
-  end
-  
+  maturationoptimizationvisualization(link_lengths_per_arm,results_optimization);  
 end

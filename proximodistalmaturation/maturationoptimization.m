@@ -42,10 +42,7 @@ for arm_type=1:n_arm_types
     end
   end
 
-  subplot(1,n_arm_types,arm_type)
-  title(sprintf('arm type = %d',arm_type));
-  current_histories = {learning_histories{arm_type,:,:}};
-  plotlearninghistorymaturation(current_histories);
-  drawnow
+  maturationoptimizationvisualization(link_lengths_per_arm,learning_histories);
+  
 end
 
