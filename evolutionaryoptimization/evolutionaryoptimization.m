@@ -188,14 +188,16 @@ theta_opt = theta;
 
   function [theta_opt learning_history] = testevolutionaryoptimization
 
+    n_dims = 2;
+    
     % Get the task (see nest function '[task] = task_min_dist(target)' below)
-    target = [0 0];
+    target = zeros(1,n_dims);
     task = task_min_dist(target);
 
     % Initial parameters
-    theta_init = [10 10];
-    covar_init = [8 0 ; 0 8];
-
+    theta_init = 10*ones(1,n_dims);
+    covar_init = 8*eye(n_dims);
+    
     % Algorithm parameters
     n_updates = 25;
     K = 15;
@@ -229,6 +231,7 @@ theta_opt = theta;
       task.name = 'min_dist';
       task.perform_rollout = @perform_rollout_min_dist;
       task.target = target;
+      task.n_dims = length(target);
 
       % Now comes the function that does the roll-out and visualization thereof
       function cost = perform_rollout_min_dist(task,theta,plot_me,color)
@@ -240,10 +243,18 @@ theta_opt = theta;
           if (nargin<4)
             color = [0 0 0.6];
           end
-          plot([task.target(1) theta(1)],[task.target(2) theta(2)],'-','Color',color)
-          plot(theta(1),theta(2),'o','Color',color)
-          axis equal
-          axis([-10 10 -10 10])
+          if (task.n_dims==2)
+            plot([task.target(1) theta(1)],[task.target(2) theta(2)],'-','Color',color)
+            plot(theta(1),theta(2),'o','Color',color)
+            axis equal
+            axis([-10 10 -10 10])
+          elseif (task.n_dims==3)
+            plot3([task.target(1) theta(1)],[task.target(2) theta(2)],[task.target(3) theta(3)],'-','Color',color)
+            plot3(theta(1),theta(2),theta(3),'o','Color',color)
+            axis equal
+            axis([-10 10 -10 10 -10 10])
+            view(45,45)
+          end
         end
 
       end
