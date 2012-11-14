@@ -1,47 +1,42 @@
-function sensitivityanalysis
+function [viapoints] = sensitivityanalysis
 
 %[ task pol_pars_shared pi_pars_shared pi_meta_pars viz_pars ] = initpimeta_icdl2012;
-
-viapoint_xs = linspace(0,1,10);
-viapoint_ys = linspace(0.1,1,9);
-n_viapoints = length(viapoint_xs) * length(viapoint_ys); %#ok<NASGU>
-
-
 
 n_arm_types = getlinklengths;
 n_dofs = 6;
 arm_length = 1;
+
+viapoint_xs = linspace(0,1,10);
+viapoint_ys = linspace(0.1,1,9);
+n_viapoints = 0;
+clear viapoints;
+for viapoint_x=viapoint_xs
+  for viapoint_y=viapoint_ys
+    viapoint = [viapoint_x viapoint_y]';
+    dist_to_shoulder =  sqrt(sum((viapoint).^2));
+    if (dist_to_shoulder<=arm_length)
+      n_viapoints = n_viapoints + 1;
+      viapoints(n_viapoints,:) = viapoint;
+    end
+  end
+end
+
 
 clf
 for arm_type=1:n_arm_types 
   link_lengths = getlinklengths(arm_type,n_dofs,arm_length);
   
   subplot(2,n_arm_types,arm_type)
+  plot(viapoints(:,1),viapoints(:,2),'.')
   for which_angle=1:n_dofs
     angles = zeros(1,n_dofs);
     for angle_sign=1:3
       angles(which_angle) = (angle_sign-2)*(pi/10);
       hold on
       x = getarmpos(angles,link_lengths,1,2);
-
-      viapoint_count = 1;
-      for viapoint_x=viapoint_xs
-        for viapoint_y=viapoint_ys
-          hold on
-          viapoint = [viapoint_x viapoint_y]';
-
-          dist_to_shoulder =  sqrt(sum((viapoint).^2));
-          if (dist_to_shoulder>arm_length)
-            % Cannot reach this anyway: do not include
-          else
-            plot(viapoint_x,viapoint_y,'.')
-            dist_to_viapoint(which_angle,angle_sign,viapoint_count) =  sqrt(sum((x-viapoint).^2));
-            viapoint_count = viapoint_count+1;
-          end
-
-        end
+      for i_viapoint = 1:n_viapoints
+        dist_to_viapoint(which_angle,angle_sign,i_viapoint) =  sqrt(sum((x-viapoints(i_viapoint,:)').^2));
       end
-
     end
   end
   hold off
@@ -70,9 +65,9 @@ for arm_type=1:n_arm_types
   ylabel('min/max cost with 0.1\pi perturbation')
 
   drawnow
+  
 
 end
-viapoint_count
 
 end
 
