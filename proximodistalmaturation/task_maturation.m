@@ -13,7 +13,7 @@ task.time = 0.5;
 task.time_exec = 0.6;
 task.dt = 1/50;
 task.n_dofs = length(link_lengths);
-n_basisfunctions = 2;
+n_basisfunctions = 5;
 task.n_basisfunctions = n_basisfunctions;
 task.theta_init = zeros(task.n_dofs,task.n_basisfunctions); % Policy parameters
 
