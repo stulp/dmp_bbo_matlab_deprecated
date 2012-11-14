@@ -1,4 +1,6 @@
-task = task_maturation;
+viapoint = [0.5 0.5]';
+armtype = 2;
+task = task_maturation(viapoint,armtype);
 
 n_updates = 10;
 K = 20;

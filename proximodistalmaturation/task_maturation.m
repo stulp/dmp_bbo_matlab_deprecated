@@ -4,7 +4,7 @@ if (nargin<2), arm_type = 2; end
 
 task.name = 'maturation';
 task.perform_rollout = @perform_rollout_maturation;
-
+task.plotlearninghistorycustom = @plotlearninghistorymaturation;
 
 % Policy settings
 task.time = 0.5;
@@ -85,10 +85,7 @@ task.viapoint = viapoint;
     fprintf('\t acc=%2.4f + vel=%2.4f + lim=%2.4f + via=%2.4f = %2.4f\n',(summary_costs));
 
     if (plot_me)
-      endeff = getarmpos(trajectory.y,task.link_lengths,n_timesteps,plot_me);
-      %plot(endeff(1,:),endeff(2,:),'-','Color',color);
-      %hold on
-      %plot(endeff(1,end),endeff(2,end),'o','Color',color);
+      getarmpos(trajectory.y,task.link_lengths,n_timesteps,plot_me);
       hold on
       plot(task.viapoint(1),task.viapoint(2),'*g')
       axis([-0.3 1 -0.3 1]);
@@ -96,6 +93,61 @@ task.viapoint = viapoint;
     end
 
 
+  end
+
+  function plotlearninghistorymaturation(learning_history)
+    n_updates = length(learning_history);
+    if (n_updates==1)
+      clf
+    end
+
+    n_dofs = size(learning_history(1).theta,1);
+    exploration_curves = zeros(n_updates,n_dofs);
+    for i_dof=1:n_dofs %#ok<FXUP>
+      for hh=1:length(learning_history)
+        exploration_curves(hh,i_dof) = real(max(eig(squeeze(learning_history(hh).covar(i_dof,:,:))))); % HACK
+      end
+    end
+
+    for ii=1:n_dofs
+      labels{ii} = sprintf('joint %d',ii);
+    end
+
+    cumsum_exploration_curves = cumsum(exploration_curves,2);
+
+    %----------------------------------------------------------
+    % Set colormap to have 'n_dofs' entries
+    colormap(ones(n_dofs,3))
+    map = colormap(jet);
+    %c =[ 1:ceil(n_dofs/2); (floor(n_dofs/2)+1):n_dofs]
+    %map = map(c(:),:);
+    map = rot90(rot90(map));
+    %map(end,:) = 1;
+    set(gcf,'DefaultAxesColorOrder',map)
+    colormap(map);
+
+    %----------------------------------------------------------
+    % Raw data
+    subplot(1,2,1)
+    plot(exploration_curves,'LineWidth',2)
+    legend(labels,'Location','EastOutside')
+    axis tight
+
+    %----------------------------------------------------------
+    % Normalized and plot as patches
+    subplot(1,2,2)
+    patch_pad = cumsum_exploration_curves;
+    for ii=n_dofs:-1:1
+      patch([1:n_updates n_updates 1 1],[ patch_pad(:,ii)' 0 0 patch_pad(1,ii)],map(ii,:),'EdgeColor','none')
+      hold on
+    end
+    hold off
+    legend(labels{end:-1:1},'Location','EastOutside')
+    axis tight
+    title('Exploration magnitude over time')
+    xlabel('number of updates')
+    ylabel('exploration magnitude')
+    
   end
 
 end
