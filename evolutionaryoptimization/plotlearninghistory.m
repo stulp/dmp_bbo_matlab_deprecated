@@ -9,6 +9,11 @@ if (nargin<2), highlight=0; end
 
 [ n_dofs n_dim ] = size(learning_history(1).theta);
 
+
+% If there are more thatn 2 degrees of freedom, the subplots get cluttered. So
+% remove annotations
+annotate_plots = (n_dofs<3); 
+
 %my_colormap = repmat(linspace(0.8,0.2,length(path)),3,1)';
 
 % Generate a circle for plotting
@@ -33,34 +38,53 @@ for i_dof=1:n_dofs %#ok<FXUP>
   for hh=[ 1 max(1,length(learning_history)-10):length(learning_history) ]
 
     theta = learning_history(hh).theta;
-    theta_eps = learning_history(hh).theta_eps;
+    if (highlight)
+      theta_eps = learning_history(hh).theta_eps;
+      weights  = learning_history(hh).weights;
+    end
     covar = learning_history(hh).covar;
-    weights  = learning_history(hh).weights;
     costs = learning_history(hh).costs_rollouts;
     theta_new = learning_history(hh).theta_new;
     %covar_new = learning_history(hh).covar_new;
     covar_new_bounded = learning_history(hh).covar_new_bounded;
 
+    plot_n_dim = min(n_dim,3); % Plot only first two dimensions
 
     if (hh==length(learning_history) && highlight)
       for k=1:size(theta_eps,1)
         theta_k = theta_eps(k,i_dof,:);
-        % Green circle representing weight
-        patch(theta_k(1)+weights(k)*circle(:,1),theta_k(2)+weights(k)*circle(:,2),[0.7 1 0.7],'EdgeColor','none')
-        hold on
-        % Line from current mean to theta_k
-        plot([theta(i_dof,1) theta_k(1)],[theta(i_dof,2) theta_k(2)],'-','Color',[0.5 0.5 1.0])
-        % theta_k
-        plot(theta_k(1),theta_k(2),'o','MarkerFaceColor',[0.5 0.5 1.0],'MarkerEdgeColor','k')
+        if (plot_n_dim==2)
+          % Green circle representing weight
+          patch(theta_k(1)+weights(k)*circle(:,1),theta_k(2)+weights(k)*circle(:,2),[0.7 1 0.7],'EdgeColor','none')
+          hold on
+          % Line from current mean to theta_k
+          plot([theta(i_dof,1) theta_k(1)],[theta(i_dof,2) theta_k(2)],'-','Color',[0.5 0.5 1.0])
+          % theta_k
+          plot(theta_k(1),theta_k(2),'o','MarkerFaceColor',[0.5 0.5 1.0],'MarkerEdgeColor','k')
+        elseif (plot_n_dim==3)
+          warning('Cannot plot green circle representing weight in 3 dimensions') %#ok<WNTAG>
+          % Line from current mean to theta_k
+          plot([theta(i_dof,1) theta_k(1)],[theta(i_dof,2) theta_k(2)],[theta(i_dof,3) theta_k(3)],'-','Color',[0.5 0.5 1.0])
+          hold on
+          % theta_k
+          plot(theta_k(1),theta_k(2),theta_k(3),'o','MarkerFaceColor',[0.5 0.5 1.0],'MarkerEdgeColor','k')
+        end
+
       end
       % Line from current to new theta
       plot([theta(i_dof,1) theta_new(i_dof,1)],[theta(i_dof,2) theta_new(i_dof,2)],'-','Color',0*[0.5 0 1],'LineWidth',3)
     end
 
-    plot_n_dim = min(n_dim,2); % Plot only first two dimensions
-    h_before_theta = plot(theta(i_dof,1),    theta(i_dof,2)    ,'o','MarkerSize',10,'MarkerEdgeColor','none');
-    hold on
-    h_after_theta  = plot(theta_new(i_dof,1),theta_new(i_dof,2),'o','MarkerSize',10,'MarkerEdgeColor','none');
+    if (plot_n_dim==2)
+      h_before_theta = plot(theta(i_dof,1),    theta(i_dof,2)    ,'o','MarkerSize',10,'MarkerEdgeColor','none');
+      hold on
+      h_after_theta  = plot(theta_new(i_dof,1),theta_new(i_dof,2),'o','MarkerSize',10,'MarkerEdgeColor','none');
+    elseif (plot_n_dim==3)
+      h_before_theta = plot3(theta(i_dof,1),    theta(i_dof,2)    ,    theta(i_dof,3),'o','MarkerSize',10,'MarkerEdgeColor','none');
+      hold on
+      h_after_theta  = plot3(theta_new(i_dof,1),theta_new(i_dof,2),theta_new(i_dof,3),'o','MarkerSize',10,'MarkerEdgeColor','none');
+    end
+      
     % Note that plotting this might lead to numerical issues because we are
     % taking a submatrix of the covariance matrix
     h_before_covar = error_ellipse(real(squeeze(covar(i_dof,1:plot_n_dim,1:plot_n_dim))),theta(i_dof,1:plot_n_dim));
@@ -70,11 +94,15 @@ for i_dof=1:n_dofs %#ok<FXUP>
       set([h_before_covar h_after_covar],'LineWidth',2)
       set(h_before_theta ,'MarkerFaceColor',[0.2 0.2 0.7],'MarkerEdgeColor','k')
       set(h_after_theta ,'MarkerFaceColor',[0.9 0.2 0.2],'MarkerEdgeColor','k')
-      set(h_before_covar,'Color',[0.2 0.2 0.7]);
-      set(h_after_covar,'Color',[0.9 0.2 0.2]);
+      if (plot_n_dim<3)
+        set(h_before_covar,'Color',[0.2 0.2 0.7]);
+        set(h_after_covar,'Color',[0.9 0.2 0.2]);
+      end
     else
-      set([h_before_covar h_after_covar],'Color',0.8*ones(1,3),'LineWidth',1);
-      set(h_before_theta ,'MarkerFaceColor',0.8*ones(1,3),'MarkerEdgeColor','none');
+      if (plot_n_dim<3)
+        set([h_before_covar h_after_covar],'Color',0.8*ones(1,3),'LineWidth',1);
+        set(h_before_theta ,'MarkerFaceColor',0.8*ones(1,3),'MarkerEdgeColor','none');
+      end
     end
 
 
@@ -82,8 +110,10 @@ for i_dof=1:n_dofs %#ok<FXUP>
     axis equal
     %axis([-7 17 -7 17])
     %plot(0,0,'*k')
-    xlabel('\theta_1')
-    ylabel('\theta_2')
+    if (annotate_plots)
+      xlabel('\theta_1')
+      ylabel('\theta_2')
+    end
     
   end
   
@@ -129,9 +159,11 @@ for i_dof=1:n_dofs %#ok<FXUP>
     plot(exploration_curve)
     axis square
     ylim([0 max(exploration_curve)])
-    title('Exploration magnitude over time')
-    xlabel('number of updates')
-    ylabel('exploration magnitude')
+    if (annotate_plots)
+      title('Exploration magnitude over time')
+      xlabel('number of updates')
+      ylabel('exploration magnitude')
+    end
   end
   
 end
