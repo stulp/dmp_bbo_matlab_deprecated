@@ -62,7 +62,7 @@ if (ndims(covar)==2)
   covar = repmat(shiftdim(covar,-1),n_dofs,[]);
 end
 
-plot_me = 1;
+plot_me = 0;
 if (plot_me)
   clf
 end
