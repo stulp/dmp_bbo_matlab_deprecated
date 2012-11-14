@@ -1,16 +1,18 @@
-function [task] = task_maturation(viapoint,arm_type)
-if (nargin<1), viapoint  = [0.5 0.5]'; end
-if (nargin<2), arm_type = 2; end
+function [task] = task_maturation(viapoint,link_lengths)
 
 task.name = 'maturation';
 task.perform_rollout = @perform_rollout_maturation;
 task.plotlearninghistorycustom = @plotlearninghistorymaturation;
 
+% Task parameters
+task.link_lengths = link_lengths;
+task.viapoint = viapoint;
+
 % Policy settings
 task.time = 0.5;
 task.time_exec = 0.6;
 task.dt = 1/50;
-task.n_dofs = 6;
+task.n_dofs = length(link_lengths);
 n_basisfunctions = 2;
 task.n_basisfunctions = n_basisfunctions;
 task.theta_init = zeros(task.n_dofs,task.n_basisfunctions); % Policy parameters
@@ -22,10 +24,6 @@ ts = 0:task.dt:task.time_exec;
 %n_timesteps = length(ts);
 task.activations = basisfunctionactivations(centers,widths,ts);
 
-% Task parameters
-arm_length=1;
-task.link_lengths = getlinklengths(arm_type,task.n_dofs,arm_length);
-task.viapoint = viapoint;
 
 
 % Now comes the function that does the roll-out and visualization thereof

@@ -8,7 +8,12 @@ force_redo_experiments = 0; % 0 -> visualize results if already available
 n_dofs = 6;
 arm_length = 1;
 
-
+% Get link lengths
+n_arm_types = getlinklengths;
+link_lengths_per_arm = zeros(n_arm_types,n_dofs);
+for arm_type=1:n_arm_types
+  link_lengths_per_arm(arm_type,:) = getlinklengths(arm_type,n_dofs,arm_length);
+end
 
 %-------------------------------------------------------------------------------
 % SENSITIVITY ANALYSIS
@@ -29,9 +34,10 @@ for viapoint_x=viapoint_xs
   end
 end
 
-figure(1)
-sensitivityanalysis(n_dofs,arm_length,viapoints)
+perturbation_magnitude = (pi/10);
 
+figure(1)
+sensitivityanalysis(link_lengths_per_arm,perturbation_magnitude,viapoints);
 
 %-------------------------------------------------------------------------------
 % UNCERTAINTY HANDLING
@@ -45,11 +51,12 @@ end
 figure(2)
 if (force_redo_experiments || ~exist('results_uncertaintyhandling','var') )
   % Do experiments
-  results_uncertaintyhandling = uncertaintyhandling(n_dofs,arm_length,n_experiments_uncertaintyhandling);
+  results_uncertaintyhandling = uncertaintyhandling(link_lengths_per_arm,n_experiments_uncertaintyhandling);
 else
   % Visualize experiments
-  uncertaintyhandlingvisualize(n_dofs,arm_length,results_uncertaintyhandling);
+  uncertaintyhandlingvisualize(link_lengths_per_arm,results_uncertaintyhandling);
 end
+
 
 
 %-------------------------------------------------------------------------------
@@ -71,7 +78,7 @@ end
 figure(3)
 if (force_redo_experiments || ~exist('learning_histories','var') )
   % Do experiments
-  learning_histories = maturationoptimization(viapoints,n_experiments_per_task,n_updates);
+  learning_histories = maturationoptimization(link_lengths_per_arm,viapoints,n_experiments_per_task,n_updates);
 else
   % Visualize experiments
   n_arm_types = getlinklengths;

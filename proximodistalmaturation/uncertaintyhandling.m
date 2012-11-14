@@ -1,6 +1,4 @@
-function results = uncertaintyhandling(n_dofs,arm_length,n_experiments)
-
-n_arm_types = getlinklengths;
+function results = uncertaintyhandling(link_lengths_per_arm,n_experiments)
 
 % For each combination of joints:
 % sample perturbation of both from a Gaussian
@@ -12,8 +10,11 @@ n_arm_types = getlinklengths;
 % How often does 2 change the rank?
 % i.e. how often does C or D lie between A-B
 
+n_arm_types = size(link_lengths_per_arm,1);
 for arm_type=1:n_arm_types
-  link_lengths = getlinklengths(arm_type,n_dofs,arm_length);
+  link_lengths = link_lengths_per_arm(arm_type,:);
+  n_dofs = length(link_lengths);
+  
   results{arm_type} = nan*ones(n_dofs,n_dofs);
 
 
@@ -74,6 +75,6 @@ end
 
 
 % Plot results
-uncertaintyhandlingvisualize(n_dofs,arm_length,results);
+uncertaintyhandlingvisualize(link_lengths_per_arm,results);
 
 end
