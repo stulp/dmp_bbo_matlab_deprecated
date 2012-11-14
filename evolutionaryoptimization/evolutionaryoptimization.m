@@ -1,4 +1,4 @@
-function [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds,covar_scales)
+function [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds,covar_lowpass,covar_scales)
 % Input:
 %  task             - task that should be optimized
 %  theta_init       - initial parameters
@@ -31,6 +31,8 @@ function [theta_opt learning_history] = evolutionaryoptimization(task,theta_init
 %                                        upper_absolute
 %                                        default: no bound
 %
+%
+%  covar_lowpass  - covar_new = (1-covar_lowpass)*covar + covar_lowpass*covar_new;
 %  covar_scales - scaling factor for covar (work in progress)
 
 if (nargin==0)
@@ -49,7 +51,8 @@ if (nargin<6); eliteness = round(K/2); end
 if (nargin<7); weighting_method = 3; end
 if (nargin<8); covar_update = 2; end % Full update of covar
 if (nargin<9); covar_bounds = [0.1]; end %#ok<NBRAK> % Lower relative bound
-if (nargin<10); covar_scales = 1; end % No scaling
+if (nargin<10); covar_lowpass = 0; end % No lowpass filter
+if (nargin<11); covar_scales = 1; end % No scaling
 
 theta = theta_init;
 [ n_dofs n_dim ] = size(theta);
@@ -62,9 +65,9 @@ end
 plot_me = 1;
 if (plot_me)
   clf
-  color = [0.8 0.8 0.8];
-  color_eval = [1 0 0];
 end
+color = [0.8 0.8 0.8];
+color_eval = [1 0 0];
 
 learning_history = [];
 for i_update=1:n_updates
@@ -182,6 +185,7 @@ for i_update=1:n_updates
   % Replace the old with the new. Such is life.
   theta = theta_new;
   covar = covar_new_bounded;
+  covar = (1-covar_lowpass)*covar_new_bounded + covar_lowpass*covar;
 
 end
 
