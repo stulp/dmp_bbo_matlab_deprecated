@@ -169,6 +169,10 @@ for i_update=1:n_updates
     hold off
 
     plotlearninghistory(learning_history);
+    if (isfield(task,'plotlearninghistorycustom'))
+      figure(11)
+      task.plotlearninghistorycustom(learning_history)
+    end
     %fprintf('Pausing... press key to continue.\n')
     pause(0.5)
   end
