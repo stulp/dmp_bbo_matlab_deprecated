@@ -3,6 +3,7 @@
 
 impatient = 1; % 0 -> do everything, 1 -> do less, and thus quicker
 force_redo_experiments = 0; % 0 -> visualize results if already available
+export_figures = 0;
 
 % Arm settings
 n_dofs = 6;
@@ -35,11 +36,14 @@ for viapoint_x=viapoint_xs
   end
 end
 
-perturbation_magnitude = (pi/10);
+perturbation_magnitude = 0.1;
 
 figure(1)
 sensitivityanalysis(link_lengths_per_arm,perturbation_magnitude,viapoints);
 
+if (export_figures)
+  plot2svg('sensitivityanalysis.svg')
+end
 
 %-------------------------------------------------------------------------------
 fprintf('___________________________________________________________________\n')
@@ -60,6 +64,9 @@ else
   uncertaintyhandlingvisualize(link_lengths_per_arm,results_uncertaintyhandling);
 end
 
+if (export_figures)
+  plot2svg('uncertaintyhandling.svg')
+end
 
 %-------------------------------------------------------------------------------
 fprintf('___________________________________________________________________\n')
@@ -67,7 +74,7 @@ fprintf('OPTIMIZATION\n')
 
 % Settings for optimization
 n_experiments_per_task = 10;
-n_updates = 100;
+n_updates = 50;
 if (exist('impatient','var') && impatient)
   % Do limited number of updates and experiments per task
   n_updates = 20;
@@ -87,3 +94,10 @@ else
   % Visualize experiments
   maturationoptimizationvisualization(link_lengths_per_arm,results_optimization);  
 end
+
+if (export_figures)
+  plot2svg('optimization.svg')
+end
+
+
+save('proximodistalmaturation.mat','link_lengths_per_arm','perturbation_magnitude','viapoints','results_optimization','results_uncertaintyhandling')

@@ -51,7 +51,7 @@ if (plot_me)
     plot(squeeze(x_links(:,:,1))',squeeze(x_links(:,:,2))','-','Color',0.7*ones(1,3))
     % Joints
     % remark: don't plot last entry. It is not a joint, but the end-effector
-    plot(squeeze(x_links(:,1:end-1,1)),squeeze(x_links(:,1:end-1,2)),'.','Color',0.3*ones(1,3))
+    plot(squeeze(x_links(:,1:end-1,1)),squeeze(x_links(:,1:end-1,2)),'.','Color',0.3*ones(1,3),'MarkerSize',15)
     
     % 'Robot body'
     plot([-0.1 0 0 -0.1 -0.1 0],[0.05 0.05 -0.05 -0.05 0.05 0.05],'-k')
