@@ -42,7 +42,9 @@ for arm_type=1:n_arm_types
     end
   end
 
-  maturationoptimizationvisualization(link_lengths_per_arm,learning_histories);
+  if (n_experiments_per_task>1)
+    maturationoptimizationvisualization(link_lengths_per_arm,learning_histories);
+  end
   
 end
 

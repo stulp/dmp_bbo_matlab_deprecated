@@ -83,7 +83,11 @@ task.activations = basisfunctionactivations(centers,widths,ts);
     %fprintf('\t acc=%2.4f + vel=%2.4f + lim=%2.4f + via=%2.4f = %2.4f\n',(summary_costs));
 
     if (plot_me)
-      getarmpos(trajectory.y,task.link_lengths,n_timesteps,plot_me);
+      if (plot_me==2)
+        getarmpos(trajectory.y,task.link_lengths,1:2:n_timesteps,plot_me);
+      else
+        getarmpos(trajectory.y,task.link_lengths,n_timesteps,plot_me);
+      end
       hold on
       plot(task.viapoint(1),task.viapoint(2),'*g')
       axis([-0.3 1 -0.3 1]);
