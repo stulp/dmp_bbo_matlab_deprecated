@@ -21,7 +21,7 @@ if (nargin==0)
   return;
 end
 
-if (arm_type==1)
+if (arm_type==2)
   % Set defaults if parameters weren't passed
   if (nargin<2), n_dofs=10; end
   if (nargin<3), arm_length=1; end
