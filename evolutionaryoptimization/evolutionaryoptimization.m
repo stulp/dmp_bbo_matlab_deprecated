@@ -10,30 +10,8 @@ function [theta_opt learning_history] = evolutionaryoptimization(task,theta_init
 %                       1 - Cross-entropy method weights
 %                       2 - CMAES default weights
 %                       3 - PI^2 weights
-%  covar_update     - determines decay of the exploration (should be in range <0,1])
-%                       0     - No updating, covariance matrix does not change
-%                       <0-1> - Decaying exploration
-%                       1     - Update diagonal through reward-weighted averaging
-%                       2     - Update full covariance matrix through reward-weighted averaging
-%  covar_bounds     - lower/upper bounds on the covariance matrix eigenvalues
-%                       Takes form [lower_relative lower_absolute upper_absolute]
-%                       lower_relative - none of the covariance matrix'
-%                                        eigenvalues may be smaller than
-%                                        lower_relative times the largest
-%                                        eigenvalue
-%                                        default: 0.01
-%                       lower_absolute - none of the covariance matrix'
-%                                        eigenvalues may be smaller than
-%                                        lower_absolute
-%                                        default: no bound
-%                       upper_absolute - none of the covariance matrix'
-%                                        eigenvalues may be smaller than
-%                                        upper_absolute
-%                                        default: no bound
-%
-%
-%  covar_lowpass  - covar_new = (1-covar_lowpass)*covar + covar_lowpass*covar_new;
-%  covar_scales - scaling factor for covar (work in progress)
+%  covar_update,covar_bounds,covar_lowpass,covar_scales - 
+%     parameters related to covariance matrix updating -> see "updatecovar.m"
 
 if (nargin==0)
   [theta_opt learning_history] = testevolutionaryoptimization;
@@ -114,40 +92,11 @@ for i_update=1:n_updates
     cur_theta_eps = squeeze(theta_eps(:,i_dof,:));
 
     % Update the mean
-    cur_theta_new = sum(repmat(weights,1,n_dim).*cur_theta_eps,1);
-
-    % Update the covar matrix
-    if (covar_update>0 && covar_update<1)
-      % Decaying exploration
-      cur_covar_new = covar_update*cur_covar;
-
-    elseif (covar_update>=1)
-      % Update with reward-weighed averaging
-      eps = cur_theta_eps - repmat(cur_theta,K,1);
-      cur_covar_new = (repmat(weights,1,n_dim).*eps)'*eps;
-      if (covar_update==1)
-        % Only use diagonal
-        cur_covar_new = diag(diag(cur_covar_new));
-      end
-      
-      % Avoid numerical issues
-      cur_covar_new = real(cur_covar_new);
-      
-    else
-      % Constant exploration
-      cur_covar_new = cur_covar;
-    end
-
-    if (isempty(covar_bounds))
-      % No bounding
-      cur_covar_new_bounded = cur_covar_new;
-    else
-      cur_covar_new_bounded = boundcovar(cur_covar_new,covar_bounds,covar_scales);
-    end
-
-    theta_new(i_dof,:) = cur_theta_new;
-    covar_new(i_dof,:,:) = cur_covar_new;
-    covar_new_bounded(i_dof,:,:) = cur_covar_new_bounded;
+    theta_new(i_dof,:) = sum(repmat(weights,1,n_dim).*cur_theta_eps,1);
+    
+    % Update covar
+    [covar_new(i_dof,:,:) covar_new_bounded(i_dof,:,:) ]...
+      = updatecovar(cur_theta,cur_covar,cur_theta_eps,weights,covar_update,covar_bounds,covar_lowpass,covar_scales);
 
   end
 
@@ -185,7 +134,6 @@ for i_update=1:n_updates
   % Replace the old with the new. Such is life.
   theta = theta_new;
   covar = covar_new_bounded;
-  covar = (1-covar_lowpass)*covar_new_bounded + covar_lowpass*covar;
 
 end
 
@@ -215,7 +163,7 @@ theta_opt = theta;
     
     % covar_update = 0;    % Exploration does not change during learning
     covar_update = 0.9;  % Decay exploration during learning
-    covar_update = 2;    % Reward-weighted averaging update of covar
+    covar_update =  2;    % Reward-weighted averaging update of covar
     if (covar_update>=1)
       % For covariance matrix updating, a lower bound on the
       % eigenvalues is recommended to avoid premature convergence
