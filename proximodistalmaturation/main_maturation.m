@@ -15,7 +15,8 @@ link_lengths_per_arm = zeros(n_arm_types,n_dofs);
 for arm_type=1:n_arm_types
   link_lengths_per_arm(arm_type,:) = getlinklengths(arm_type,n_dofs,arm_length);
 end
-arm_labels = {'Equidistant','Human','Inverted Human'};
+arm_labels = {'Human','Equidistant','Inverted Human'};
+
 
 %-------------------------------------------------------------------------------
 fprintf('___________________________________________________________________\n')
