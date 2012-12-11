@@ -73,8 +73,21 @@ if (1)
   for ii=n_dofs:-1:1
     patch([1:n_updates n_updates 1 1],[ patch_pad(:,ii)' 0 0 patch_pad(1,ii)],map(ii,:),'EdgeColor',0*[1 1 1])
     hold on
-    plot(max_value_indices([ii ii]),[0 patch_pad(max_value_indices(ii),ii)],'-k','LineWidth',3)
   end
+
+  for ii=1:n_dofs
+    if (ii==1)
+      lower_value = 0;
+    else
+      lower_value = patch_pad(max_value_indices(ii),ii-1);
+    end
+    upper_value = patch_pad(max_value_indices(ii),ii);
+    
+    plot(max_value_indices([ii ii]),[lower_value upper_value],'-k','LineWidth',3)
+    text(max_value_indices(ii),mean([lower_value upper_value]),sprintf('%1.2f',max_values(ii)),...
+      'FontSize',12,'Rotation',90,'HorizontalAlignment','center','VerticalAlignment','top');
+  end
+
   sum_exploration_curves = sum(exploration_curves,2);
   plot(sum_exploration_curves/13,'-k','LineWidth',5)
   plot(sum_exploration_curves/13,'-w','LineWidth',2)
