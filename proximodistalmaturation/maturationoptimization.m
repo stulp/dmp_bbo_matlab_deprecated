@@ -11,7 +11,7 @@ eliteness = 10;
 % Covariance matrix updating
 dummy_task = task_maturation(-1,-1); % Trick to get number of basis functions
 n_basisfunctions = dummy_task.n_basisfunctions;
-covar_init = eye(n_basisfunctions);
+covar_init = 0.05*eye(n_basisfunctions);
 % Reward-weighted averaging update of covar. 
 if (n_basisfunctions>3)
   % Diagonal only. More robust.
@@ -20,7 +20,7 @@ else
   % Full update.
   covar_update = 2; 
 end
-covar_lowpass = 0.5;
+covar_lowpass = 0.0;
 
 % For covariance matrix updating with RWA, a lower bound on the
 % eigenvalues is recommended to avoid premature convergence
@@ -39,6 +39,11 @@ for arm_type=1:n_arm_types
       fprintf('arm_type=%d/%d, viapoint=[%1.2f %1.2f] (%d/%d), i_experiment=%d/%d \n',arm_type,n_arm_types,task.viapoint,i_viapoint,n_viapoints, i_experiment,n_experiments_per_task);
       [theta_opt learning_history] = evolutionaryoptimization(task,task.theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds,covar_lowpass);
       learning_histories{arm_type,i_viapoint,i_experiment} = learning_history;
+      
+      %if (mod(i_experiment,10)==1)
+      %  maturationoptimizationvisualization(link_lengths_per_arm,learning_histories);
+      %end
+
     end
   end
 
