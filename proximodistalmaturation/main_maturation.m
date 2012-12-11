@@ -109,7 +109,7 @@ fprintf('OPTIMIZATION\n')
 
 % Settings for optimization
 n_experiments_per_task = 10;
-n_updates = 50;
+n_updates = 100;
 if (exist('impatient','var') && impatient)
   % Do limited number of updates and experiments per task
   n_updates = 20;
