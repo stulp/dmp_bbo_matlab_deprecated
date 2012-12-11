@@ -1,4 +1,4 @@
-function plotlearninghistorymaturation(learning_histories)
+function [exploration_curves] = plotlearninghistorymaturation(learning_histories,exploration_curves)
 if (isstruct(learning_histories))
   % You can pass either one learning history (a struct), or a cell array of
   % learning histories. In the former case, convert the struct to a cell
@@ -11,6 +11,7 @@ n_histories = length(learning_histories);
 n_updates = length(learning_histories{1});
 n_dofs = size(learning_histories{1}(1).theta,1);
 
+if (nargin<2)
 exploration_curves = zeros(n_histories,n_updates,n_dofs);
 for i_history=1:n_histories %#ok<FXUP>
   learning_history = learning_histories{i_history};
@@ -25,6 +26,7 @@ end
 exploration_curves = squeeze(mean(exploration_curves,1));
 % Compute cumulative exploration magnitudes
 cumsum_exploration_curves = cumsum(exploration_curves,2);
+end
 
 %----------------------------------------------------------
 % Start plotting things
@@ -58,19 +60,31 @@ axis tight
 
 %----------------------------------------------------------
 % Normalized and plot as patches
-if (0)
-  subplot(1,2,2)
-  patch_pad = cumsum_exploration_curves;
-  for ii=n_dofs:-1:1
-    patch([1:n_updates n_updates 1 1],[ patch_pad(:,ii)' 0 0 patch_pad(1,ii)],map(ii,:),'EdgeColor','none')
-    hold on
+if (1)
+  cla
+  %subplot(1,2,2)
+  patch_pad = exploration_curves; % cumsum_exploration_curves;
+  %[max_values max_value_indices] = max(exploration_curves)
+  for tt=1:size(patch_pad,1)
+    patch_pad(tt,:) = patch_pad(tt,:)./sum(patch_pad(tt,:));
   end
+  [max_values max_value_indices] = max(patch_pad);
+  patch_pad = cumsum(patch_pad,2);
+  for ii=n_dofs:-1:1
+    patch([1:n_updates n_updates 1 1],[ patch_pad(:,ii)' 0 0 patch_pad(1,ii)],map(ii,:),'EdgeColor',0*[1 1 1])
+    hold on
+    plot(max_value_indices([ii ii]),[0 patch_pad(max_value_indices(ii),ii)],'-k','LineWidth',3)
+  end
+  sum_exploration_curves = sum(exploration_curves,2);
+  plot(sum_exploration_curves/13,'-k','LineWidth',5)
+  plot(sum_exploration_curves/13,'-w','LineWidth',2)
   hold off
   legend(labels{end:-1:1},'Location','EastOutside')
   axis tight
   title('Exploration magnitude over time')
   xlabel('number of updates')
   ylabel('exploration magnitude')
+  ylim([0 1])
 end
 
 drawnow
