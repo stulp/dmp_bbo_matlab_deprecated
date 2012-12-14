@@ -1,4 +1,4 @@
-function [exploration_curves] = plotlearninghistorymaturation(learning_histories,exploration_curves)
+function [max_values max_value_indices colors exploration_curves] = plotlearninghistorymaturation(learning_histories,arm_color,exploration_curves)
 if (isstruct(learning_histories))
   % You can pass either one learning history (a struct), or a cell array of
   % learning histories. In the former case, convert the struct to a cell
@@ -11,7 +11,7 @@ n_histories = length(learning_histories);
 n_updates = length(learning_histories{1});
 n_dofs = size(learning_histories{1}(1).theta,1);
 
-if (nargin<2)
+if (nargin<3)
 exploration_curves = zeros(n_histories,n_updates,n_dofs);
 for i_history=1:n_histories %#ok<FXUP>
   learning_history = learning_histories{i_history};
@@ -42,12 +42,22 @@ end
 % Set colormap to have 'n_dofs' entries
 colormap(ones(n_dofs,3))
 map = colormap(jet);
+map = rot90(rot90(map));
+colors = map;
+
+map_hsv = rgb2hsv(map);
+hsv_map_new = map_hsv; 
+hsv_map_new(:,2) = 0.3; 
+colors_faded = hsv2rgb(hsv_map_new);
+
+%map = repmat(linspace(0.3,1.0,n_dofs)',3);
+colormap(map);
 %c =[ 1:ceil(n_dofs/2); (floor(n_dofs/2)+1):n_dofs]
 %map = map(c(:),:);
-map = rot90(rot90(map));
 %map(end,:) = 1;
 set(gcf,'DefaultAxesColorOrder',map)
 colormap(map);
+
 
 %----------------------------------------------------------
 % Raw data
@@ -60,6 +70,7 @@ axis tight
 
 %----------------------------------------------------------
 % Normalized and plot as patches
+
 if (1)
   cla
   %subplot(1,2,2)
@@ -71,7 +82,7 @@ if (1)
   [max_values max_value_indices] = max(patch_pad);
   patch_pad = cumsum(patch_pad,2);
   for ii=n_dofs:-1:1
-    patch([1:n_updates n_updates 1 1],[ patch_pad(:,ii)' 0 0 patch_pad(1,ii)],map(ii,:),'EdgeColor',0*[1 1 1])
+    patch([1:n_updates n_updates 1 1],[ patch_pad(:,ii)' 0 0 patch_pad(1,ii)],colors_faded(ii,:),'EdgeColor',0.4*[1 1 1])
     hold on
   end
 
@@ -83,22 +94,29 @@ if (1)
     end
     upper_value = patch_pad(max_value_indices(ii),ii);
     
+
+
     plot(max_value_indices([ii ii]),[lower_value upper_value],'-k','LineWidth',3)
     text(max_value_indices(ii),mean([lower_value upper_value]),sprintf('%1.2f',max_values(ii)),...
-      'FontSize',12,'Rotation',90,'HorizontalAlignment','center','VerticalAlignment','top');
+      'FontSize',12,'Rotation',0,'HorizontalAlignment','left','VerticalAlignment','top');
+
+    plot(max_value_indices(ii),mean([lower_value upper_value]),'o','MarkerSize',16,'MarkerFaceColor',colors(ii,:),'MarkerEdgeColor',[0 0 0],'LineWidth',2)
+    text(max_value_indices(ii),mean([lower_value upper_value]),num2str(ii),'HorizontalAlignment','center')
+
   end
 
   sum_exploration_curves = sum(exploration_curves,2);
-  plot(sum_exploration_curves/13,'-k','LineWidth',5)
-  plot(sum_exploration_curves/13,'-w','LineWidth',2)
+  plot(sum_exploration_curves/13,'-y','LineWidth',5)
+  plot(sum_exploration_curves/13,'-k','LineWidth',2)
   hold off
   legend(labels{end:-1:1},'Location','EastOutside')
   axis tight
-  title('Exploration magnitude over time')
+  %title('Exploration magnitude over time')
   xlabel('number of updates')
   ylabel('exploration magnitude')
   ylim([0 1])
 end
+set(gca,'PlotBoxAspectRatio',[1.618 1 1] );
 
 drawnow
 end

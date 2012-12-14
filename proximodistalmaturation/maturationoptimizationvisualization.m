@@ -4,6 +4,9 @@ n_arm_types = size(link_lengths_per_arm,1);
 
 subplot_handles = zeros(n_arm_types,2);
 clf
+
+arm_colors = 0.8*[1 0 0; 0 1 0; 0 0 1];
+
 for arm_type=1:size(learning_histories,1)
   link_lengths = link_lengths_per_arm(arm_type,:);
   n_dofs = length(link_lengths);
@@ -27,12 +30,28 @@ for arm_type=1:size(learning_histories,1)
   axis off
   end
   
-  subplot_handles(arm_type,2) = subplot(3,n_arm_types,[n_arm_types 2*n_arm_types]+arm_type);
+  %subplot_handles(arm_type,2) = subplot(3,n_arm_types,[n_arm_types 2*n_arm_types]+arm_type);
+  subplot_handles(arm_type,2) = subplot(1,3,arm_type);
   title(sprintf('arm type = %d',arm_type));
   current_histories = {learning_histories{arm_type,:,:}};
-  plotlearninghistorymaturation(current_histories);
+  [max_values max_value_indices colors ] = plotlearninghistorymaturation(current_histories,arm_colors(arm_type,:));
   legend off
-
+  
+  %subplot(2,2,n_arm_types+1);
+  if (0)
+  [sorted_vals sorted_idx] = sort(max_value_indices); 
+  plot(max_value_indices(sorted_idx),max_values(sorted_idx),'-','Color',arm_colors(arm_type,:),'LineWidth',2)
+  hold on
+  for ii=1:length(max_value_indices)
+    plot(max_value_indices(ii),max_values(ii),'o','MarkerSize',16,'MarkerFaceColor',colors(ii,:),'MarkerEdgeColor',arm_colors(arm_type,:),'LineWidth',2)
+    text(max_value_indices(ii),max_values(ii),num2str(ii),'HorizontalAlignment','center')
+  end
+  ylim([1/n_dofs 0.6])
+  xlabel('number of updates')
+  ylabel('exploration magnitude')
+  set(gca,'PlotBoxAspectRatio',[1.618 1 1] );
+  end
+  
   if (0)
   pos_subplot_1 = get(subplot_handles(arm_type,1),'Position');
   pos_subplot_2 = get(subplot_handles(arm_type,2),'Position');
