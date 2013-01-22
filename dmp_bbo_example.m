@@ -5,7 +5,7 @@ addpath(genpath('tasks/'))
 % Get the task to be optimized
 
 % A very simple 1-D DMP viapoint task
-task = task_viapoint;
+task = task_viapoint_external;
 % The JMLR style n-DOF kinmatically simulated arm task
 %n_dofs = 2;
 %arm_length = 1;

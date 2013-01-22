@@ -76,9 +76,10 @@ for i_update=1:n_updates
   %theta_eps(1,:) = theta;
 
   % Perform roll-outs and record cost
-  for k=1:K
-    costs_rollouts(k,:) = task.perform_rollout(task,squeeze(theta_eps(k,:,:)),plot_me,color);
-  end
+  %for k=1:K
+  %  costs_rollouts(k,:) = task.perform_rollout(task,squeeze(theta_eps(k,:,:)),plot_me,color);
+  %end
+  costs_rollouts = task.perform_rollout(task,theta_eps,plot_me,color);
 
   % The weights, given the costs
   weights = coststoweights(costs_rollouts(:,1),weighting_method,eliteness);
