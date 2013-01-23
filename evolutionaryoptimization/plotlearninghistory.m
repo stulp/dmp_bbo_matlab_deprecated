@@ -20,6 +20,7 @@ annotate_plots = (n_dofs<3);
 aaa = linspace(0,2*pi,20);
 circle = 3*[sin([aaa(end) aaa])' cos([aaa(end) aaa])'];
 
+if (0)
 for i_dof=1:n_dofs %#ok<FXUP>
 
   if (highlight)
@@ -106,8 +107,9 @@ for i_dof=1:n_dofs %#ok<FXUP>
     end
 
 
-    axis square
+    %axis square
     axis equal
+    axis tight
     %axis([-7 17 -7 17])
     %plot(0,0,'*k')
     if (annotate_plots)
@@ -166,6 +168,7 @@ for i_dof=1:n_dofs %#ok<FXUP>
     end
   end
   
+end
 end
 
 if (highlight)

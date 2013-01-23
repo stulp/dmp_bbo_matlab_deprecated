@@ -63,7 +63,7 @@ for i_update=1:n_updates
   end
 
   % Perform an evaluation roll-out with the current parameters
-  cost_eval = task.perform_rollout(task,theta,2*plot_me,color_eval);
+  %cost_eval = task.perform_rollout(task,theta,2*plot_me,color_eval);
 
   %------------------------------------------------------------------
   % Actual search
@@ -73,14 +73,20 @@ for i_update=1:n_updates
   for i_dof=1:n_dofs
     theta_eps(:,i_dof,:) = mvnrnd(theta(i_dof,:),squeeze(covar(i_dof,:,:)),K);
   end
-  %theta_eps(1,:) = theta;
+  theta_eps(1,:,:) = theta;
 
+  if (0)
   % Perform roll-outs and record cost
-  %for k=1:K
-  %  costs_rollouts(k,:) = task.perform_rollout(task,squeeze(theta_eps(k,:,:)),plot_me,color);
-  %end
+  for k=1:K
+    costs_rollouts(k,:) = task.perform_rollout(task,squeeze(theta_eps(k,:,:)),plot_me,color);
+  end
+  else
+  filename = sprintf('./data/current_update.txt');
+  dlmwrite(filename,i_update,' ');
   costs_rollouts = task.perform_rollout(task,theta_eps,plot_me,color);
-
+  end
+  cost_eval = costs_rollouts(1,1)
+  
   % The weights, given the costs
   weights = coststoweights(costs_rollouts(:,1),weighting_method,eliteness);
 

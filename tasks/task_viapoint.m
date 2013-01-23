@@ -21,7 +21,16 @@ task.viapoint_time_step = round(viapoint_time_ratio*task.time/task.dt);
 
 task.order=2; % Order of the dynamic movement primitive
 % Next values optimized for minimizing acceleration in separate learning session
-task.theta_init = [37.0458   -4.2715   27.0579   13.6385; 37.0458   -4.2715   27.0579   13.6385];
+%task.theta_init = [37.0458   -4.2715   27.0579   13.6385; 37.0458   -4.2715   27.0579   13.6385];
+task.theta_init = zeros(2,2);
+
+[ trajectory activations canonical_at_centers ] = dmpintegrate(task.y0,task.g,task.theta_init,task.time,task.dt,task.time_exec);
+
+% Determine scales
+% Normalize
+task.scales = abs(canonical_at_centers)/max(abs(canonical_at_centers))
+% Avoid zeros by adding a 10% baseline
+task.scales = (task.scales+0.01)/(1+0.01)
 
 
 addpath dynamicmovementprimitive/

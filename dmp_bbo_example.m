@@ -5,23 +5,28 @@ addpath(genpath('tasks/'))
 % Get the task to be optimized
 
 % A very simple 1-D DMP viapoint task
-task = task_viapoint_external;
+if (~exist('goal_pos','var'))
+  goal_pos = [0.0 3 -0.8];
+end
+task = task_viapoint_external(goal_pos);
+
+%task = task_viapoint;
 % The JMLR style n-DOF kinmatically simulated arm task
 %n_dofs = 2;
 %arm_length = 1;
 %task = task_multidofviapoint(n_dofs,arm_length);
 
 % Initial covariance matrix for exploration 
-covar_init = 5*eye(size(task.theta_init,2));
+covar_init = 0.05*eye(size(task.theta_init,2));
 
 % Number of updates, roll-outs per update, weighting method, and covariance
 % update method
 n_updates = 100;
-K = 15;
+K = 5;
 weighting_method = 2; % 1=CEM, 2=CMAES, 3=PI2
 eliteness = ceil(K/2);
 %weighting_method = 3; eliteness = 10; % PI2 style weighting
-covar_update = 0.99; %#ok<NASGU> % Set 0 < covar_update < 1 to decay exploration over time
+covar_update = 0.9; %#ok<NASGU> % Set 0 < covar_update < 1 to decay exploration over time
 covar_bounds = []; % No bounds
 %covar_update = 2;    % Reward-weighted averaging update of covar
 if (covar_update>=1)
@@ -29,9 +34,19 @@ if (covar_update>=1)
   % eigenvalues is recommended to avoid premature convergence
   covar_bounds = [0.1]; %#ok<NBRAK> % 0.05 10]; %#ok<NBRAK> % Lower/upper bounds on covariance matrix
 end
+covar_lowpass =   0;
+covar_scales  =   1;
+
+if (isfield(task,'scales'))
+  covar_scales = task.scales;
+  covar_init = covar_init./sqrt(covar_scales'*covar_scales);
+end
+covar_scales
+covar_init
+pause
 
 clf
-evolutionaryoptimization(task,task.theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update)
+evolutionaryoptimization(task,task.theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds,covar_lowpass,covar_scales)
 
 
 

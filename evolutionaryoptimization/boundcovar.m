@@ -49,7 +49,7 @@ if (length(bounds)>2), upper_bound_absolute = bounds(3); end
 
 
 % Scale covariance matrix
-covar_scaled = covar.*(scales'*scales);
+covar_scaled = covar.*sqrt(scales'*scales);
 
 % Get eigenvalues/vectors
 [eigvec,eigval] = eig(covar_scaled);
@@ -82,7 +82,7 @@ eigval = diag(eigval);
 covar_scaled_bounded = (eigvec*eigval)/eigvec;
 
 % Scale covariance matrix back
-covar_bounded = covar_scaled_bounded./(scales'*scales);
+covar_bounded = covar_scaled_bounded./sqrt(scales'*scales);
 
 % Due to numerical issues, covar_bounded may contain imaginary parts. Remove.
 covar_bounded = real(covar_bounded);
