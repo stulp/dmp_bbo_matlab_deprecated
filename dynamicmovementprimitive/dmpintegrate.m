@@ -1,4 +1,4 @@
-function [ trajectory activations ] = dmpintegrate(y0,g,theta,time,dt,time_exec,order,figure_handle)
+function [ trajectory activations canonical_at_centers ] = dmpintegrate(y0,g,theta,time,dt,time_exec,order,figure_handle)
 % Integrate a Dynamic Movement Primitive
 %
 % Input:
@@ -17,7 +17,9 @@ function [ trajectory activations ] = dmpintegrate(y0,g,theta,time,dt,time_exec,
 %                      trajectory.y   - position over time (for each dimension)
 %                      trajectory.yd  - velocity over time (for each dimension)
 %                      trajectory.ydd - acceleration over time (for each dimension)
-%   activations - activations of the basis functions at each phase/time step
+%   activations - activations of the basis functions at each time step
+%   canonical_at_centers - value of the canonical system at the centers of the
+%                          basis functions
 
 if (nargin==0)
   % If no arguments are passed, test the function
@@ -61,15 +63,22 @@ end
 
 %-------------------------------------------------------------------------------
 % Integrate canonical system in closed form
+order = 2;
 [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
 % Duration of the motion in time steps
 T = length(xs);
+
 
 %-------------------------------------------------------------------------------
 % Get basis function activations
 centers = linspace(1,0.001,n_basis_functions);
 widths = ones(size(centers))/n_basis_functions;
 activations = basisfunctionactivations(centers,widths,xs);
+
+% Get indices when basis functions are max, i.e. at theirs centers
+[ max_activations max_activation_indices ] = max(activations);
+% Value of canonical system at the centers of the basis functions
+canonical_at_centers = vs(max_activation_indices)';
 
 %-------------------------------------------------------------------------------
 % Initialization
