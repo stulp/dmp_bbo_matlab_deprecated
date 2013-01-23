@@ -21,7 +21,7 @@ covar_init = 0.05*eye(size(task.theta_init,2));
 
 % Number of updates, roll-outs per update, weighting method, and covariance
 % update method
-n_updates = 100;
+n_updates = 4;
 K = 5;
 weighting_method = 2; % 1=CEM, 2=CMAES, 3=PI2
 eliteness = ceil(K/2);
@@ -43,10 +43,9 @@ if (isfield(task,'scales'))
 end
 covar_scales
 covar_init
-pause
 
 clf
-evolutionaryoptimization(task,task.theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds,covar_lowpass,covar_scales)
+[theta_opt learning_history] = evolutionaryoptimization(task,task.theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds,covar_lowpass,covar_scales)
 
 
 

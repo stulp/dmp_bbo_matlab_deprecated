@@ -1,7 +1,7 @@
 function [task] = task_viapoint_external(goal_ball,g,y0)
 if (nargin<1), goal_ball = zeros(1,3); end
 if (nargin<2), g  = [  1.271  -0.468   0.283   1.553   0.296  -0.000   0.591  ]; end
-if (nargin<3), y0   = [-0.274 -0.221  0.012  0.149 -0.001  0.001  0.104]; end
+if (nargin<3), y0   = [-0.274 -0.221  0.112  0.149 -0.001  0.001  0.104]; end
 
 task.name = 'viapoint';
 task.perform_rollout = @perform_rollout_viapoint;
@@ -34,7 +34,7 @@ task.scales = (task.scales+0.01)/(1+0.01)
 addpath dynamicmovementprimitive/
 
 % Now comes the function that does the roll-out and visualization thereof
-  function costs = perform_rollout_viapoint(task,thetas,plot_me,color)
+  function [ costs cost_vars ] = perform_rollout_viapoint(task,thetas,plot_me,color)
     
     filename = sprintf('./data/current_update.txt');
     current_update = load(filename);
@@ -80,15 +80,16 @@ addpath dynamicmovementprimitive/
     end
     fprintf('\n');
 
+    
     for k=1:K
       filename = sprintf('./data/%03d_txt_files/trial%02d_cost_vars.txt',current_update ,k);
       cost_vars = load(filename);
-
-      ball_goal=  cost_vars(end,4:6);
-      ball_landed =  cost_vars(end,1:3);
+      
+      ball_goal=  cost_vars(end,1:3);
+      ball_landed =  cost_vars(end,4:6);
       
       dist = sqrt(sum((ball_landed-ball_goal).^2));
-      cost = 100*dist;
+      cost = (100*dist)^2;
 
       costs(k,:) = cost;
 
