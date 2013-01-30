@@ -48,8 +48,12 @@ color = [0.8 0.8 0.8];
 color_eval = [1 0 0];
 
 learning_history = [];
-for i_update=1:n_updates
-
+%for i_update=1:n_updates
+cost_eval = 1000;
+i_update=0;
+while (cost_eval>1 && i_update<50)
+  i_update=i_update+1;
+  
   %------------------------------------------------------------------
   % Bookkeeping.
 
@@ -86,7 +90,7 @@ for i_update=1:n_updates
   costs_rollouts = task.perform_rollout(task,theta_eps,plot_me,color);
   end
   cost_eval = costs_rollouts(1,1)
-  
+
   % The weights, given the costs
   weights = coststoweights(costs_rollouts(:,1),weighting_method,eliteness);
 
