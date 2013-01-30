@@ -24,6 +24,18 @@ task.theta_init = zeros(7,5);
 
 [ trajectory activations canonical_at_centers ] = dmpintegrate(task.y0,task.g,task.theta_init,task.time,task.dt,task.time_exec);
 
+%for ii=1:size(trajectory.pos,2)
+figure(80)
+subplot(3,2,1)
+plot(trajectory.t,trajectory.y)
+subplot(3,2,3)
+plot(trajectory.t,trajectory.yd)
+subplot(3,2,5)
+plot(trajectory.t,trajectory.ydd)
+%end
+trajectory
+pause
+
 % Determine scales
 % Normalize
 task.scales = abs(canonical_at_centers)/max(abs(canonical_at_centers))
@@ -45,7 +57,9 @@ addpath dynamicmovementprimitive/
     
     K = size(thetas,1);
     
-    mkdir('data',sprintf('%03d_txt_files',current_update));
+    if (~exist(sprintf('./data/%03d_txt_files',current_update)))
+      mkdir('data',sprintf('%03d_txt_files',current_update));
+    end
     filename = sprintf('./data/%03d_txt_files/number_of_trials.txt',current_update);
     dlmwrite(filename,K,' ');
 
@@ -72,7 +86,11 @@ addpath dynamicmovementprimitive/
     
     
     delete('./data/done.txt')
-    system('./runcb')
+    if (K==1)
+      system('./runcb')
+    else
+      system('./runcbng')
+    end
     fprintf('CB running');
     while (~exist('./data/done.txt','file'))
       pause(0.1)
@@ -89,7 +107,7 @@ addpath dynamicmovementprimitive/
       ball_landed =  cost_vars(end,4:6);
       
       dist = sqrt(sum((ball_landed-ball_goal).^2));
-      cost = (100*dist)^2;
+      cost = (100*dist);
 
       costs(k,:) = cost;
 
