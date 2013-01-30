@@ -17,7 +17,10 @@ task = task_viapoint_external(goal_pos);
 %task = task_multidofviapoint(n_dofs,arm_length);
 
 % Initial covariance matrix for exploration 
-covar_init = 0.05*eye(size(task.theta_init,2));
+covar_init = 0.1*eye(size(task.theta_init,2));
+covar_init = repmat(shiftdim(covar_init,-1),7,[]);
+covar_init(3,:,:) = 300*covar_init(3,:,:);
+%covar_init([1:2 4:end],:,:) = 0;
 
 % Number of updates, roll-outs per update, weighting method, and covariance
 % update method
@@ -26,7 +29,7 @@ K = 5;
 weighting_method = 2; % 1=CEM, 2=CMAES, 3=PI2
 eliteness = ceil(K/2);
 %weighting_method = 3; eliteness = 10; % PI2 style weighting
-covar_update = 0.9; %#ok<NASGU> % Set 0 < covar_update < 1 to decay exploration over time
+covar_update = 0.95; %#ok<NASGU> % Set 0 < covar_update < 1 to decay exploration over time
 covar_bounds = []; % No bounds
 %covar_update = 2;    % Reward-weighted averaging update of covar
 if (covar_update>=1)
@@ -39,10 +42,12 @@ covar_scales  =   1;
 
 if (isfield(task,'scales'))
   covar_scales = task.scales;
-  covar_init = covar_init./sqrt(covar_scales'*covar_scales);
+  for ii=1:size(covar_init,1)
+    covar_init(ii,:,:) = squeeze(covar_init(ii,:,:))./sqrt(covar_scales'*covar_scales);
+  end
 end
 covar_scales
-covar_init
+squeeze(covar_init(1,:,:))
 
 clf
 [theta_opt learning_history] = evolutionaryoptimization(task,task.theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds,covar_lowpass,covar_scales)
