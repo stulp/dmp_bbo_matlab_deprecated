@@ -1,4 +1,9 @@
-trial*
+data
+*.svg
+*.mat
+trial*.txt
+output*.txt
+result*.txt
 *~
 *.png
 *.tgz
