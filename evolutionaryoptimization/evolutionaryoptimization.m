@@ -6,7 +6,7 @@ function [theta_opt learning_history] = evolutionaryoptimization(task,theta_init
 %  n_updates         - number of updates to perform
 %  n_samples         - number of roll-outs per update
 %  eliteness         - number elite samples per update
-%  update_parameters - see check_update_parameters for the fields it may contain
+%  update_parameters - see "check_update_parameters.m" for the fields it may contain
 % Output:
 
 %-------------------------------------------------------------------------------
@@ -46,18 +46,19 @@ plot_me = 1;
 % Actual optimization loop
 i_update = 0;
 while (i_update<=n_updates)
-    
+  
   %------------------------------------------------------------------
   % Update parameters and sample next batch of thetas
-  if (i_update==0)
-    % First batch of samples (no update performed)
-    [ theta_eps ] = update_and_sample(distributions,n_samples);
-  else
-    % Second batch is determined from the update parameters based on the
-    % previous batch
-    [ theta_eps learning_history{i_update} distributions ] = update_and_sample(distributions,theta_eps,costs,update_parameters);
+  if (i_update>0)
+    [ distributions learning_history{i_update} ] = update_distributions(distributions,theta_eps,costs,update_parameters);
   end
   
+  %------------------------------------------------------------------
+  % Sample from distributions
+  first_is_mean = 1;
+  theta_eps = generate_samples(distributions,n_samples,first_is_mean);
+  
+  %------------------------------------------------------------------
   % Prepare plotting of roll-outs if necessary
   if (plot_me)
     figure(1)
@@ -73,6 +74,8 @@ while (i_update<=n_updates)
   costs = task.perform_rollouts(task,theta_eps,plot_me);
   
   
+  %------------------------------------------------------------------
+  % More plotting
   if (plot_me)
     % Done with plotting of roll-outs
     subplot(n_dofs,4,1:4:n_dofs*4)
