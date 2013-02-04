@@ -7,7 +7,9 @@ function plotlearninghistory(learning_history,highlight)
 if (nargin==0), testplotlearninghistory; return; end
 if (nargin<2), highlight=0; end
 
-[ n_dofs n_dim ] = size(learning_history(1).theta);
+
+n_dofs = length(learning_history{1}.distributions_new);
+n_dim = length(learning_history{1}.distributions_new(1).mean);
 
 
 % If there are more thatn 2 degrees of freedom, the subplots get cluttered. So
@@ -37,34 +39,33 @@ for i_dof=1:n_dofs %#ok<FXUP>
   % Plot only most recent 10 history entries
   for hh=[ 1 max(1,length(learning_history)-10):length(learning_history) ]
 
-    theta = learning_history(hh).theta;
+    theta = learning_history{hh}.distributions(i_dof).mean;
+    covar = learning_history{hh}.distributions(i_dof).covar;
+    costs = learning_history{hh}.costs;
+    theta_new = learning_history{hh}.distributions_new(i_dof).mean;
+    covar_new = learning_history{hh}.distributions_new(i_dof).covar;
     if (highlight)
-      theta_eps = learning_history(hh).theta_eps;
-      weights  = learning_history(hh).weights;
+      theta_eps = learning_history{hh}.samples;
+      weights  = learning_history{hh}.weights;
     end
-    covar = learning_history(hh).covar;
-    costs = learning_history(hh).costs_rollouts;
-    theta_new = learning_history(hh).theta_new;
-    %covar_new = learning_history(hh).covar_new;
-    covar_new_bounded = learning_history(hh).covar_new_bounded;
-
+    
     plot_n_dim = min(n_dim,3); % Plot only first two dimensions
 
     if (hh==length(learning_history) && highlight)
       for k=1:size(theta_eps,1)
-        theta_k = theta_eps(k,i_dof,:);
+        theta_k = theta_eps(i_dof,k,:);
         if (plot_n_dim==2)
           % Green circle representing weight
           patch(theta_k(1)+weights(k)*circle(:,1),theta_k(2)+weights(k)*circle(:,2),[0.7 1 0.7],'EdgeColor','none')
           hold on
           % Line from current mean to theta_k
-          plot([theta(i_dof,1) theta_k(1)],[theta(i_dof,2) theta_k(2)],'-','Color',[0.5 0.5 1.0])
+          plot([theta(1) theta_k(1)],[theta(2) theta_k(2)],'-','Color',[0.5 0.5 1.0])
           % theta_k
           plot(theta_k(1),theta_k(2),'o','MarkerFaceColor',[0.5 0.5 1.0],'MarkerEdgeColor','k')
         elseif (plot_n_dim==3)
           warning('Cannot plot green circle representing weight in 3 dimensions') %#ok<WNTAG>
           % Line from current mean to theta_k
-          plot([theta(i_dof,1) theta_k(1)],[theta(i_dof,2) theta_k(2)],[theta(i_dof,3) theta_k(3)],'-','Color',[0.5 0.5 1.0])
+          plot([theta(1) theta_k(1)],[theta(2) theta_k(2)],[theta(3) theta_k(3)],'-','Color',[0.5 0.5 1.0])
           hold on
           % theta_k
           plot(theta_k(1),theta_k(2),theta_k(3),'o','MarkerFaceColor',[0.5 0.5 1.0],'MarkerEdgeColor','k')
@@ -72,23 +73,23 @@ for i_dof=1:n_dofs %#ok<FXUP>
 
       end
       % Line from current to new theta
-      plot([theta(i_dof,1) theta_new(i_dof,1)],[theta(i_dof,2) theta_new(i_dof,2)],'-','Color',0*[0.5 0 1],'LineWidth',3)
+      plot([theta(1) theta_new(1)],[theta(2) theta_new(2)],'-','Color',0*[0.5 0 1],'LineWidth',3)
     end
 
     if (plot_n_dim==2)
-      h_before_theta = plot(theta(i_dof,1),    theta(i_dof,2)    ,'o','MarkerSize',10,'MarkerEdgeColor','none');
+      h_before_theta = plot(theta(1),    theta(2)    ,'o','MarkerSize',10,'MarkerEdgeColor','none');
       hold on
-      h_after_theta  = plot(theta_new(i_dof,1),theta_new(i_dof,2),'o','MarkerSize',10,'MarkerEdgeColor','none');
+      h_after_theta  = plot(theta_new(1),theta_new(2),'o','MarkerSize',10,'MarkerEdgeColor','none');
     elseif (plot_n_dim==3)
-      h_before_theta = plot3(theta(i_dof,1),    theta(i_dof,2)    ,    theta(i_dof,3),'o','MarkerSize',10,'MarkerEdgeColor','none');
+      h_before_theta = plot3(theta(1),    theta(2)    ,    theta(3),'o','MarkerSize',10,'MarkerEdgeColor','none');
       hold on
-      h_after_theta  = plot3(theta_new(i_dof,1),theta_new(i_dof,2),theta_new(i_dof,3),'o','MarkerSize',10,'MarkerEdgeColor','none');
+      h_after_theta  = plot3(theta_new(1),theta_new(2),theta_new(3),'o','MarkerSize',10,'MarkerEdgeColor','none');
     end
       
     % Note that plotting this might lead to numerical issues because we are
     % taking a submatrix of the covariance matrix
-    h_before_covar = error_ellipse(real(squeeze(covar(i_dof,1:plot_n_dim,1:plot_n_dim))),theta(i_dof,1:plot_n_dim));
-    h_after_covar  = error_ellipse(real(squeeze(covar_new_bounded(i_dof,1:plot_n_dim,1:plot_n_dim))),theta_new(i_dof,1:plot_n_dim));
+    h_before_covar = error_ellipse(real(squeeze(covar(1:plot_n_dim,1:plot_n_dim))),theta(1:plot_n_dim));
+    h_after_covar  = error_ellipse(real(squeeze(covar_new(1:plot_n_dim,1:plot_n_dim))),theta_new(1:plot_n_dim));
 
     if (hh==length(learning_history))
       set([h_before_covar h_after_covar],'LineWidth',2)
@@ -154,7 +155,8 @@ for i_dof=1:n_dofs %#ok<FXUP>
 
     % Plot exploration magnitude curve (largest eigenvalue of covar)
     for hh=1:length(learning_history)
-      exploration_curve(hh,:) = real(max(eig(squeeze(learning_history(hh).covar(i_dof,:,:))))); % HACK
+      covar = learning_history{hh}.distributions(i_dof).covar;
+      exploration_curve(hh,:) = real(max(eig(covar))); % HACK
     end
     plot(exploration_curve)
     axis square
@@ -178,8 +180,8 @@ end
 std_costs_exploration = [];
 for hh=1:length(learning_history)
   %exploit_times(hh) = length(costs_exploration)+1;
-  costs_exploitation(hh,:) = learning_history(hh).cost_eval;
-  std_costs_exploration(hh,:) = sqrt(var(learning_history(hh).costs_rollouts));
+  costs_exploitation(hh,:) = learning_history{hh}.costs(1);
+  std_costs_exploration(hh,:) = sqrt(var(learning_history{hh}.costs));
 end
 
 subplot(n_dofs,4,4:4:n_dofs*4)
