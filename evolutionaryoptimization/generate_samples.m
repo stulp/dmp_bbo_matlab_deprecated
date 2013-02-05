@@ -25,27 +25,20 @@ n_dims  = length(distributions(1).mean);
 
 %-------------------------------------------------------------------------------
 % Sample from new distribution
-%n_samples = 1000;
-
 samples = zeros(n_dofs,n_samples,n_dims);
-for i_dof=1:n_dofs
+for i_dof=1:n_dofs %#ok<FXUP>
   mu = distributions(i_dof).mean;
   covar = distributions(i_dof).covar;
-  
-  
+    
   % Sample from Gaussian for the others
-  samples(i_dof,:,:) = mvnrnd(mu,covar,n_samples);
-  
-%  figure(99)
-%  plot(squeeze(samples(i_dof,:,1)),squeeze(samples(i_dof,:,2)),'.k');
-  
   if (isequal(diag(diag(covar)),covar))
-    warning('Todo: optimize sampling from diagonal covar') %#ok<WNTAG>
- %   samples(i_dof,:,:)
+    % For diagonal covar, manual sampling is faster than using mvnrnd (older
+    % versions)
+    samples(i_dof,:,:) = repmat(mu,n_samples,1) + randn(n_samples,n_dims).*repmat(sqrt(diag(covar))',n_samples,1);
+  else
+    samples(i_dof,:,:) = mvnrnd(mu,covar,n_samples);
   end
-
-  %plot(squeeze(samples(i_dof,:,1)),squeeze(samples(i_dof,:,2)),'.r');
-
+  
   if (first_is_mean)
     % Zero exploration in first sample; useful to get performance of current mean
     samples(i_dof,1,:) = mu;
