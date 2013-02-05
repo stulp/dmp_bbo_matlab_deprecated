@@ -20,6 +20,11 @@ if (strcmp(update_parameters.covar_update,'decay'));
       warning('covar decay must be in range <0-1>, but it is %1.2f. Setting to default: %1.2f',update_parameters.covar_decay,default_decay) %#ok<WNTAG>
     end
   end
+
+end
+
+if (~isfield(update_parameters,'covar_scales'))
+  update_parameters.covar_scales        =       1; % No scaling
 end
 
 
