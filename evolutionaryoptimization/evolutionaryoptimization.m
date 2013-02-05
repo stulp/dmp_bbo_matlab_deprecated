@@ -144,13 +144,14 @@ end
     clf
     [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,update_parameters); %#ok<NASGU>
 
-    % Test backwards compatibility
-    update_parameters.weighting_method    =       2;
-    update_parameters.covar_update        =       1;
-    [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,...
-      update_parameters.eliteness,update_parameters.weighting_method,update_parameters.covar_update,update_parameters.covar_bounds,update_parameters.covar_learning_rate,update_parameters.covar_scales);
-
-    
+    test_backwards_compatibility=0;
+    if (test_backwards_compatibility)
+      % Test backwards compatibility
+      update_parameters.weighting_method    =       2;
+      update_parameters.covar_update        =       1;
+      [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,...
+        update_parameters.eliteness,update_parameters.weighting_method,update_parameters.covar_update,update_parameters.covar_bounds,update_parameters.covar_learning_rate,update_parameters.covar_scales);
+    end
     
     
     % Here is an example of how to design a task. This one simply returns the
