@@ -50,7 +50,8 @@ while (i_update<=n_updates)
   %------------------------------------------------------------------
   % Update parameters and sample next batch of thetas
   if (i_update>0)
-    [ distributions learning_history{i_update} ] = update_distributions(distributions,theta_eps,costs,update_parameters);
+    [ distributions summary ] = update_distributions(distributions,theta_eps,costs,update_parameters);
+    learning_history(i_update) = summary;
   end
   
   %------------------------------------------------------------------

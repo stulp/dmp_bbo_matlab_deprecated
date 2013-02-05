@@ -8,8 +8,8 @@ if (nargin==0), testplotlearninghistory; return; end
 if (nargin<2), highlight=0; end
 
 
-n_dofs = length(learning_history{1}.distributions_new);
-n_dim = length(learning_history{1}.distributions_new(1).mean);
+n_dofs = length(learning_history(1).distributions_new);
+n_dim = length(learning_history(1).distributions_new(1).mean);
 
 
 % If there are more thatn 2 degrees of freedom, the subplots get cluttered. So
@@ -39,14 +39,14 @@ for i_dof=1:n_dofs %#ok<FXUP>
   % Plot only most recent 10 history entries
   for hh=[ 1 max(1,length(learning_history)-10):length(learning_history) ]
 
-    theta = learning_history{hh}.distributions(i_dof).mean;
-    covar = learning_history{hh}.distributions(i_dof).covar;
-    costs = learning_history{hh}.costs;
-    theta_new = learning_history{hh}.distributions_new(i_dof).mean;
-    covar_new = learning_history{hh}.distributions_new(i_dof).covar;
+    theta = learning_history(hh).distributions(i_dof).mean;
+    covar = learning_history(hh).distributions(i_dof).covar;
+    costs = learning_history(hh).costs;
+    theta_new = learning_history(hh).distributions_new(i_dof).mean;
+    covar_new = learning_history(hh).distributions_new(i_dof).covar;
     if (highlight)
-      theta_eps = learning_history{hh}.samples;
-      weights  = learning_history{hh}.weights;
+      theta_eps = learning_history(hh).samples;
+      weights  = learning_history(hh).weights;
     end
     
     plot_n_dim = min(n_dim,3); % Plot only first two dimensions
@@ -155,7 +155,7 @@ for i_dof=1:n_dofs %#ok<FXUP>
 
     % Plot exploration magnitude curve (largest eigenvalue of covar)
     for hh=1:length(learning_history)
-      covar = learning_history{hh}.distributions(i_dof).covar;
+      covar = learning_history(hh).distributions(i_dof).covar;
       exploration_curve(hh,:) = real(max(eig(covar))); % HACK
     end
     plot(exploration_curve)
@@ -180,8 +180,8 @@ end
 std_costs_exploration = [];
 for hh=1:length(learning_history)
   %exploit_times(hh) = length(costs_exploration)+1;
-  costs_exploitation(hh,:) = learning_history{hh}.costs(1);
-  std_costs_exploration(hh,:) = sqrt(var(learning_history{hh}.costs));
+  costs_exploitation(hh,:) = learning_history(hh).costs(1);
+  std_costs_exploration(hh,:) = sqrt(var(learning_history(hh).costs));
 end
 
 subplot(n_dofs,4,4:4:n_dofs*4)
@@ -203,39 +203,34 @@ drawnow
 
 
   function testplotlearninghistory
-    n_dofs = 2;
+    n_dofs = 1;
+    n_samples=20;
+    n_updates = 15;
     for n_basisfunctions=2:4
-      clear path;
+      clear learning_history;
 
-      node.theta = zeros(n_dofs,n_basisfunctions);
-      node.covar = zeros(n_dofs,n_basisfunctions,n_basisfunctions);
       for i_dof=1:n_dofs %#ok<FXUP>
-        node.covar(i_dof,:,:) = eye(n_basisfunctions);
+        node.distributions(i_dof).mean = 10*ones(1,n_basisfunctions);
+        node.distributions(i_dof).covar = eye(n_basisfunctions,n_basisfunctions);
       end
-      node.cost_eval = [10 8 2];
-      path(1) = node;
-
-      n_updates = 20;
-      for nn=1:n_updates+1;
-        path(nn).theta_new = path(nn).theta + 0.5*ones(size(path(1).theta));
-        path(nn).covar_new = 0.8*path(nn).covar;
-        path(nn).covar_new_bounded = path(nn).covar_new;
-
-        path(nn).cost_eval(2) = 0.8*path(nn).cost_eval(2);
-        path(nn).cost_eval(1) = sum(path(nn).cost_eval(2:end));
-
-        path(nn).costs_rollouts = path(nn).cost_eval(1) + 10*path(nn).covar_new(1,1,1)*rand(1,10);
-
-
-        path(nn+1) = path(nn);
-
-        path(nn+1).theta = path(nn).theta_new;
-        path(nn+1).covar = path(nn).covar_new;
-
+      learning_history(1) = node;
+      
+      for uu=1:n_updates
+        learning_history(uu).samples = generate_samples(learning_history(uu).distributions,n_samples);
+        costs = zeros(n_samples,1);
+        for i_dof=1:n_dofs %#ok<FXUP>
+          learning_history(uu).costs = costs + sum(squeeze(learning_history(uu).samples(i_dof,:,:)),2);
+          % Fake an update
+          learning_history(uu).distributions_new(i_dof).mean  = 0.8*learning_history(uu).distributions(i_dof).mean;
+          learning_history(uu).distributions_new(i_dof).covar = 0.8*learning_history(uu).distributions(i_dof).covar;
+        end
+        
+        learning_history(uu+1).distributions = learning_history(uu).distributions_new; 
       end
-
+      learning_history = learning_history(1:n_updates);
+        
       figure(n_basisfunctions)
-      plotlearninghistory(path(1:n_updates))
+      plotlearninghistory(learning_history)
     end
 
   end
