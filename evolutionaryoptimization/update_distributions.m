@@ -5,9 +5,9 @@ function [distributions_new summary] = update_distributions(distributions,sample
 %   samples       - samples from above distribution. Size:  n_dofs x n_samples x n_dims
 %   costs         - costs for each sample: 1 x n_samples
 %   update_parameters - parameters for updating (usually constant during optimization)
-%              weighting_method   - PI-BB, CMA-ES
+%              weighting_method   - PI-BB, CMA-ES, CEM
 %              eliteness          - h (PI-BB), K_e (CMA-ES, CEM)
-%              covar_update       - None, Decay, PI-BB, CMA-ES
+%              covar_update       - none, decay, PI-BB, CMA-ES, CEM
 %              covar_full         - 1: full covar update
 %                                   0: diagonal only
 %              covar_full         - 1: full covar update
@@ -98,9 +98,15 @@ for i_dof=1:n_dofs
     % Decaying exploration
     covar_new = update_parameters.covar_decay*covar;
 
-  elseif (strcmp(update_parameters.covar_update,'PI-BB'))
+  elseif (strcmp(update_parameters.covar_update,'PI-BB') || strcmp(update_parameters.covar_update,'CEM'))
     % Update with reward-weighed averaging
-    eps = squeeze(samples(i_dof,:,:)) - repmat(distributions(i_dof).mean,n_samples,1);
+    mu = distributions(i_dof).mean;
+    if (strcmp(update_parameters.covar_update,'CEM'))
+      % Cross-entropy method uses the mean of the NEW distribution.
+      mu = distributions_new(i_dof).mean;
+    end
+    
+    eps = squeeze(samples(i_dof,:,:)) - repmat(mu,n_samples,1);
     covar_new = (repmat(weights,1,n_dims).*eps)'*eps;
     if (~update_parameters.covar_full)
       % Only use diagonal
@@ -114,7 +120,7 @@ for i_dof=1:n_dofs
     rate = update_parameters.covar_learning_rate;
     covar_new = (1-rate)*covar + rate*covar_new;
 
-  elseif (strcmp(update_parameters.covar_update,'None'))
+  elseif (strcmp(update_parameters.covar_update,'none'))
     % Constant exploration
     % Do nothing: covars were already copied into distributions_new above
     covar_new = covar;
@@ -180,13 +186,16 @@ summary.distributions_new = distributions_new;
     update_parameters.covar_decay         =     0.7;
 
     % Do updates for different update methods
-    covar_updates = {'PI-BB','PI-BB','Decay','None'};
-    for ff=1:4
+    covar_updates = {'none','decay','PI-BB','PI-BB','CEM'};
+    for ff=1:length(covar_updates)
       update_parameters.covar_update = covar_updates{ff};
       figure_title = covar_updates{ff};
-      if (ff==2)
+      if (ff==3)
+        figure_title = [ figure_title ' (diagonal covar update)'];
+      end
+      if (ff>=4)
         update_parameters.covar_full = 1;
-        figure_title = [ figure_title ' (diagonal only)'];
+        figure_title = [ figure_title ' (full covar update)'];
       end
 
       [ distributions_new summary ] = update_distributions(distributions,samples,costs,update_parameters);
