@@ -49,18 +49,23 @@ end
 % How many samples do we need to take?
 n_samples = size(samples,2);
 
+
+% First column contains total costs
+total_costs = costs(:,1);
+
+
 %-------------------------------------------------------------------------------
 % First, map the costs to the weights
 if (strcmp(update_parameters.weighting_method,'PI-BB'))
   % PI^2 style weighting: continuous, cost exponention
   h = update_parameters.eliteness; % In PI^2, eliteness parameter is known as "h"
-  weights = exp(-h*((costs-min(costs))/(max(costs)-min(costs))));
+  weights = exp(-h*((total_costs-min(total_costs))/(max(total_costs)-min(total_costs))));
 
 elseif (strcmp(update_parameters.weighting_method,'CEM') || strcmp(update_parameters.weighting_method,'CMA-ES'))
-  % CMA-ES style weights: rank-based, uses defaults
+  % CEM/CMA-ES style weights: rank-based, uses defaults
   mu = update_parameters.eliteness; % In CMA-ES, eliteness parameter is known as "mu"
-  [Ssorted indices] = sort(costs,'ascend');
-  weights = zeros(size(costs));
+  [Ssorted indices] = sort(total_costs,'ascend');
+  weights = zeros(size(total_costs));
   if (strcmp(update_parameters.weighting_method,'CEM'))
     weights(indices(1:mu)) = 1/mu;
   else
