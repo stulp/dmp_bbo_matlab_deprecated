@@ -1,4 +1,4 @@
-function subplot_handles = update_distributions_visualize(update_summary,highlight,plot_samples)
+function subplot_handles = update_distributions_visualize(update_summary,highlight,plot_samples,i_dofs)
 if (nargin<2), highlight=0; end
 if (nargin<3), plot_samples=0; end
 
@@ -8,8 +8,10 @@ plot_n_dim = min(n_dims,3); % Plot only first three dimensions
 
 weights = update_summary.weights;
 n_samples = length(weights);
-            
-for i_dof=1:n_dofs
+
+if (nargin<4), i_dofs=1:n_dofs; end
+
+for i_dof=i_dofs
   theta = update_summary.distributions(i_dof).mean;
   covar = update_summary.distributions(i_dof).covar;
   theta_new = update_summary.distributions_new(i_dof).mean;
@@ -17,7 +19,9 @@ for i_dof=1:n_dofs
   samples = squeeze(update_summary.samples(i_dof,:,:));
   weights_normalized = weights/max(weights);
   
-  subplot_handles(i_dof) = subplot(1,n_dofs,i_dof);
+  if (length(i_dofs)>1)
+    subplot_handles(i_dof) = subplot(1,n_dofs,i_dof);
+  end
   cla
   axis equal
   if (plot_samples)
@@ -36,10 +40,10 @@ for i_dof=1:n_dofs
       elseif (plot_n_dim==3)
         warning('Cannot plot green circle representing weight in 3 dimensions') %#ok<WNTAG>
         % Line from current mean to theta_k
-        plot([theta(1) theta_k(1)],[theta(2) theta_k(2)],[theta(3) theta_k(3)],'-','Color',[0.5 0.5 1.0])
+        plot3([theta(1) theta_k(1)],[theta(2) theta_k(2)],[theta(3) theta_k(3)],'-','Color',[0.5 0.5 1.0])
         hold on
         % theta_k
-        plot(theta_k(1),theta_k(2),theta_k(3),'o','MarkerFaceColor',[0.5 0.5 1.0],'MarkerEdgeColor','k')
+        plot3(theta_k(1),theta_k(2),theta_k(3),'o','MarkerFaceColor',[0.5 0.5 1.0],'MarkerEdgeColor','k')
       end
 
     end
