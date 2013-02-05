@@ -56,13 +56,17 @@ if (strcmp(update_parameters.weighting_method,'PI-BB'))
   h = update_parameters.eliteness; % In PI^2, eliteness parameter is known as "h"
   weights = exp(-h*((costs-min(costs))/(max(costs)-min(costs))));
 
-elseif (strcmp(update_parameters.weighting_method,'CMA-ES'))
+elseif (strcmp(update_parameters.weighting_method,'CEM') || strcmp(update_parameters.weighting_method,'CMA-ES'))
   % CMA-ES style weights: rank-based, uses defaults
   mu = update_parameters.eliteness; % In CMA-ES, eliteness parameter is known as "mu"
   [Ssorted indices] = sort(costs,'ascend');
   weights = zeros(size(costs));
-  for ii=1:mu
-    weights(indices(ii)) = log(mu+1/2)-log(ii);
+  if (strcmp(update_parameters.weighting_method,'CEM'))
+    weights(indices(1:mu)) = 1/mu;
+  else
+    for ii=1:mu
+      weights(indices(ii)) = log(mu+1/2)-log(ii);
+    end
   end
 
 else
@@ -90,7 +94,7 @@ end
 for i_dof=1:n_dofs
   covar = distributions_new(i_dof).covar;
 
-  if (strcmp(update_parameters.covar_update,'Decay'))
+  if (strcmp(update_parameters.covar_update,'decay'))
     % Decaying exploration
     covar_new = update_parameters.covar_decay*covar;
 
