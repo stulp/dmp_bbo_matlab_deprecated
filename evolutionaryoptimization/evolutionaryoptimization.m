@@ -38,11 +38,6 @@ end
 % Sanity check on update parameters
 update_parameters     = check_update_parameters(update_parameters);
 
-theta_opt=0;
-learning_history=0;
-return
-
-
 [ n_dofs n_dims ] = size(theta_init); %#ok<NASGU>
 if (ndims(covar_init)==2)
   covar_init = repmat(shiftdim(covar_init,-1),n_dofs,[]);
@@ -102,7 +97,7 @@ while (i_update<=n_updates)
       %end
     end
     %pause; fprintf('Pausing... press key to continue.\n')
-    pause(0.5)
+    pause(0.1)
   end
 
   i_update = i_update + 1;
@@ -147,13 +142,13 @@ end
 
     % Run optimization
     clf
-    [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,update_parameters);
+    [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,update_parameters); %#ok<NASGU>
 
     % Test backwards compatibility
-    update_parameters.weighting_method    =       1;
+    update_parameters.weighting_method    =       2;
     update_parameters.covar_update        =       1;
     [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,...
-      update_parameters.eliteness,update_parameters.weighting_method,update_parameters.covar_update,update_parameters.covar_bounds,update_parameters.covar_learning_rate,update_parameters.covar_scales)
+      update_parameters.eliteness,update_parameters.weighting_method,update_parameters.covar_update,update_parameters.covar_bounds,update_parameters.covar_learning_rate,update_parameters.covar_scales);
 
     
     
