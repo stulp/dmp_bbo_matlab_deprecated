@@ -89,7 +89,7 @@ while (i_update<=n_updates)
     subplot(n_dofs,4,1:4:n_dofs*4)
     hold off
 
-    if (i_update>1)
+    if (i_update>0)
       plotlearninghistory(learning_history);
       %if (isfield(task,'plotlearninghistorycustom')) zzz
       %  figure(11)

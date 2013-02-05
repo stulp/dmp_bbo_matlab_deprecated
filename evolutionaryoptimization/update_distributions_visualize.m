@@ -11,6 +11,8 @@ n_samples = length(weights);
 
 if (nargin<4), i_dofs=1:n_dofs; end
 
+marker_scale = 40;
+
 for i_dof=i_dofs
   theta = update_summary.distributions(i_dof).mean;
   covar = update_summary.distributions(i_dof).covar;
@@ -22,15 +24,14 @@ for i_dof=i_dofs
   if (length(i_dofs)>1)
     subplot_handles(i_dof) = subplot(1,n_dofs,i_dof);
   end
-  cla
   axis equal
   if (plot_samples)
     for k=1:n_samples
       theta_k = samples(k,:);
+      marker_size = round(marker_scale*weights_normalized(k))+3;
       if (plot_n_dim==2)
         % Green circle representing weight
         %patch(theta_k(1)+weights_normalized(k,1)*circle(:,1),theta_k(2)+weights_normalized(k,2)*circle(:,2),[0.7 1 0.7],'EdgeColor','none')
-        marker_size = round(50*weights_normalized(k))+3;
         plot(theta_k(1),theta_k(2),'o','MarkerFaceColor',[0.7 1 0.7],'MarkerEdgeColor','none','MarkerSize',marker_size);
         hold on
         % Line from current mean to theta_k
