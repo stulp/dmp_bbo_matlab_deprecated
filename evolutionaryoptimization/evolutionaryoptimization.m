@@ -1,4 +1,4 @@
-function [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,update_parameters)
+function [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,update_parameters,varargin)
 % Input:
 %  task              - task that should be optimized
 %  theta_init        - initial parameters
@@ -24,12 +24,24 @@ if (nargin<4);  n_updates             =            50; end
 if (nargin<5);  n_samples             =            10; end
 
 if (nargin<6);  
-  % Get defaults
+  % Get default update parameters
   update_parameters     = check_update_parameters; 
-else
-  % Sanity check on parameters passed
-  update_parameters     = check_update_parameters(update_parameters); 
+  
+elseif (~isempty(varargin))
+  % Backwards compatibilty. Previous call was like this:
+  % evolutionaryoptimization(task,theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds,covar_lowpass,covar_scales)
+  eliteness = update_parameters;
+  clear update_parameters;
+  update_parameters = backwards_compatible_update_parameters(eliteness,varargin);
 end
+
+% Sanity check on update parameters
+update_parameters     = check_update_parameters(update_parameters);
+
+theta_opt=0;
+learning_history=0;
+return
+
 
 [ n_dofs n_dims ] = size(theta_init); %#ok<NASGU>
 if (ndims(covar_init)==2)
@@ -137,6 +149,11 @@ end
     clf
     [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,update_parameters);
 
+    % Test backwards compatibility
+    update_parameters.weighting_method    =       1;
+    update_parameters.covar_update        =       1;
+    [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,...
+      update_parameters.eliteness,update_parameters.weighting_method,update_parameters.covar_update,update_parameters.covar_bounds,update_parameters.covar_learning_rate,update_parameters.covar_scales)
 
     
     
