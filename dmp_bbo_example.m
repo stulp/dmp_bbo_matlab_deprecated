@@ -5,7 +5,13 @@ addpath(genpath('tasks/'))
 % Get the task to be optimized
 
 % A very simple 2-D DMP viapoint task
-task = task_viapoint;
+g                   = [0.0 0.0];
+y0                  = [1.0 1.0];
+viapoint            = [0.4 0.7];
+viapoint_time_ratio =       0.5;
+evaluation_external_program = 1; % This runs the evaluation of costs in an external program (i.e. not Matlab)
+task = task_viapoint(g,y0,viapoint,viapoint_time_ratio,evaluation_external_program);
+
 % The JMLR style n-DOF kinmatically simulated arm task
 %n_dofs = 2;
 %arm_length = 1;
