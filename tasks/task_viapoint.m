@@ -40,7 +40,7 @@ addpath dynamicmovementprimitive/
 
     % Cost due to acceleration
     sum_ydd = sum((sum(ydds.^2,2)));
-    costs(3) = sum_ydd/100000;
+    costs(3) = sum_ydd/10000;
 
     % Total cost is the sum of all the subcomponent costs
     costs(1) = sum(costs(2:end));

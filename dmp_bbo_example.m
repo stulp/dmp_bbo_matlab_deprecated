@@ -35,26 +35,3 @@ update_parameters.covar_bounds        =   [0.1 0.01]; %#ok<NBRAK>
 clf
 evolutionaryoptimization(task,task.theta_init,covar_init,n_updates,n_samples,update_parameters)
 
-
-
-
-% NEXT STUFF IS WORK IN PROGRESS
-% This is just to get the basis function activations
-%[trajectory_dummy activations] = dmpintegrate(task.y0,task.g,task.theta_init,task.time,task.dt,task.time_exec);
-
-%plot(activations)
-
-
-%pol_pars.dt = pol_pars.duration/pol_pars.duration_ticks;
-%[y yd ydd bases]  = integrate_dmp(pol_pars,pol_pars.mean);
-%
-%pol_pars.max_activation = max(abs(squeeze(bases(1,:,:))),[],2)';
-%normalized_max_activation = pol_pars.max_activation/max(pol_pars.max_activation);
-%pol_pars.max_activation = normalized_max_activation;
-%
-%for bb=1:length(pol_pars.max_activation)
-%  pol_pars.covar(:,bb,bb) =  pol_pars.covar(:,bb,bb)/normalized_max_activation(bb);
-%end
-
-%return
-
