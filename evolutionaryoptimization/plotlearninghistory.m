@@ -11,6 +11,9 @@ if (nargin<2), highlight=0; end
 n_dofs = length(learning_history(1).distributions_new);
 n_dim = length(learning_history(1).distributions_new(1).mean);
 
+% Very difficult to see anything in the plots for many dofs
+plot_n_dofs = min(n_dofs,3);
+
 
 % If there are more thatn 2 degrees of freedom, the subplots get cluttered. So
 % remove annotations
@@ -25,7 +28,7 @@ circle = 3*[sin([aaa(end) aaa])' cos([aaa(end) aaa])'];
 
 % zzz highlight != plot_cost_to_weight
 
-for i_dof=1:n_dofs %#ok<FXUP>
+for i_dof=1:plot_n_dofs %#ok<FXUP>
 
   if (highlight)
     figure(1)
@@ -35,7 +38,7 @@ for i_dof=1:n_dofs %#ok<FXUP>
     subplot(1,2,1)    
     box on
   else
-    subplot(n_dofs,4,(i_dof-1)*4 + 2)
+    subplot(plot_n_dofs,4,(i_dof-1)*4 + 2)
     cla
   end
   
@@ -92,7 +95,7 @@ for i_dof=1:n_dofs %#ok<FXUP>
     %plot2svg(sprintf('plotlearninghistory%02d.svg',up_to))
   else
 
-    subplot(n_dofs,4,(i_dof-1)*4 + 3)
+    subplot(plot_n_dofs,4,(i_dof-1)*4 + 3)
 
     % Plot exploration magnitude curve (largest eigenvalue of covar)
     for hh=1:length(learning_history)
@@ -125,7 +128,7 @@ for hh=1:length(learning_history)
   std_costs_exploration(hh,:) = sqrt(var(learning_history(hh).costs));
 end
 
-subplot(n_dofs,4,4:4:n_dofs*4)
+subplot(plot_n_dofs,4,4:4:plot_n_dofs*4)
 plot(costs_exploitation,'-','LineWidth',2)
 hold on
 plot(costs_exploitation(:,1)+std_costs_exploration(:,1),'-b');

@@ -71,7 +71,9 @@ while (i_update<=n_updates)
   if (plot_me)
     figure(1)
     if (i_update==0), clf; end
-    subplot(n_dofs,4,1:4:n_dofs*4)
+    % Very difficult to see anything in the plots for many dofs
+    plot_n_dofs = min(n_dofs,3);
+    subplot(plot_n_dofs,4,1:4:plot_n_dofs*4)
     cla
     title('Visualization of roll-outs')
     hold on
@@ -91,10 +93,10 @@ while (i_update<=n_updates)
 
     if (i_update>0)
       plotlearninghistory(learning_history);
-      %if (isfield(task,'plotlearninghistorycustom')) zzz
-      %  figure(11)
-      %  task.plotlearninghistorycustom(learning_history)
-      %end
+      if (isfield(task,'plotlearninghistorycustom'))
+        figure(11)
+        task.plotlearninghistorycustom(learning_history)
+      end
     end
     %pause; fprintf('Pausing... press key to continue.\n')
     pause(0.1)
