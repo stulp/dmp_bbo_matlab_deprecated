@@ -1,147 +1,123 @@
-function [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds,covar_lowpass,covar_scales)
+function [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,update_parameters,varargin)
 % Input:
-%  task             - task that should be optimized
-%  theta_init       - initial parameters
-%  covar_init       - initial covariance matrix for exploration
-%  n_updates        - number of updates to perform
-%  K                - number of roll-outs per update
-%  eliteness        - number elite samples per update
-%  weighting_method - for reward-weighted averaging
-%                       1 - Cross-entropy method weights
-%                       2 - CMAES default weights
-%                       3 - PI^2 weights
-%  covar_update,covar_bounds,covar_lowpass,covar_scales - 
-%     parameters related to covariance matrix updating -> see "updatecovar.m"
+%  task              - task that should be optimized
+%  theta_init        - initial parameters
+%  covar_init        - initial covariance matrix for exploration
+%  n_updates         - number of updates to perform
+%  n_samples         - number of roll-outs per update
+%  eliteness         - number elite samples per update
+%  update_parameters - see "check_update_parameters.m" for the fields it may contain
+% Output:
 
+%-------------------------------------------------------------------------------
+% Call test function if called without arguments
 if (nargin==0)
   [theta_opt learning_history] = testevolutionaryoptimization;
   return
 end
 
-if (nargin<3); covar_init = eye(size(theta_init,2)); end
-if (nargin<4); n_updates = 50; end
-if (nargin<5); K = 10; end
-if (nargin<6); eliteness = round(K/2); end
-% weighting_method
-%  1 - Cross-entropy method weights
-%  2 - CMAES default weights
-%  3 - PI^2 weights
-if (nargin<7); weighting_method = 3; end
-if (nargin<8); covar_update = 2; end % Full update of covar
-if (nargin<9); covar_bounds = [0.1]; end %#ok<NBRAK> % Lower relative bound
-if (nargin<10); covar_lowpass = 0; end % No lowpass filter
-if (nargin<11); covar_scales = 1; end % No scaling
+%-------------------------------------------------------------------------------
+% Process arguments
+covar_default = eye(size(theta_init,2));
+if (nargin<3);  covar_init            = covar_default; end
+if (nargin<4);  n_updates             =            50; end
+if (nargin<5);  n_samples             =            10; end
 
-theta = theta_init;
-[ n_dofs n_dim ] = size(theta);
-
-covar = covar_init;
-if (ndims(covar)==2)
-  covar = repmat(shiftdim(covar,-1),n_dofs,[]);
+if (nargin<6);  
+  % Get default update parameters
+  update_parameters     = check_update_parameters; 
+  
+elseif (~isempty(varargin))
+  % Backwards compatibilty. Previous call was like this:
+  % evolutionaryoptimization(task,theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds,covar_lowpass,covar_scales)
+  eliteness = update_parameters;
+  clear update_parameters;
+  update_parameters = backwards_compatible_update_parameters(eliteness,varargin);
 end
 
-plot_me = 0;
-if (plot_me)
-  clf
+% Sanity check on update parameters
+update_parameters     = check_update_parameters(update_parameters);
+
+[ n_dofs n_dims ] = size(theta_init); %#ok<NASGU>
+if (ndims(covar_init)==2)
+  covar_init = repmat(shiftdim(covar_init,-1),n_dofs,[]);
 end
-color = [0.8 0.8 0.8];
-color_eval = [1 0 0];
+for i_dof=1:n_dofs
+  distributions(i_dof).mean  = theta_init(i_dof,:);
+  distributions(i_dof).covar = squeeze(covar_init(i_dof,:,:));
+end
 
-learning_history = [];
-for i_update=1:n_updates
+plot_me = 1;
 
+%-------------------------------------------------------------------------------
+% Actual optimization loop
+i_update = 0;
+while (i_update<=n_updates)
+  
   %------------------------------------------------------------------
-  % Bookkeeping.
-
+  % Update parameters and sample next batch of thetas
+  if (i_update>0)
+    [ distributions summary ] = update_distributions(distributions,theta_eps,costs,update_parameters);
+    learning_history(i_update) = summary;
+  end
+  
+  %------------------------------------------------------------------
+  % Sample from distributions
+  first_is_mean = 1;
+  theta_eps = generate_samples(distributions,n_samples,first_is_mean);
+  
+  %------------------------------------------------------------------
   % Prepare plotting of roll-outs if necessary
   if (plot_me)
     figure(1)
-    subplot(n_dofs,4,1:4:n_dofs*4)
+    if (i_update==0), clf; end
+    % Very difficult to see anything in the plots for many dofs
+    plot_n_dofs = min(n_dofs,3);
+    subplot(plot_n_dofs,4,1:4:plot_n_dofs*4)
     cla
     title('Visualization of roll-outs')
     hold on
   end
-
-  % Perform an evaluation roll-out with the current parameters
-  cost_eval = task.perform_rollout(task,theta,2*plot_me,color_eval);
-
+  
   %------------------------------------------------------------------
-  % Actual search
-
-  % Generate perturbations for this update
-  theta_eps = zeros(K,n_dofs,n_dim);
-  for i_dof=1:n_dofs
-    theta_eps(:,i_dof,:) = mvnrnd(theta(i_dof,:),squeeze(covar(i_dof,:,:)),K);
-  end
-  %theta_eps(1,:) = theta;
-
-  % Perform roll-outs and record cost
-  for k=1:K
-    costs_rollouts(k,:) = task.perform_rollout(task,squeeze(theta_eps(k,:,:)),plot_me,color);
-  end
-
-  % The weights, given the costs
-  weights = coststoweights(costs_rollouts(:,1),weighting_method,eliteness);
-
-  % Perform the update for each dof separately
-  for i_dof=1:n_dofs
-
-    % Get theta, covar and theta_eps for this DOF
-    cur_theta     = squeeze(theta(i_dof,:));
-    cur_covar     = squeeze(covar(i_dof,:,:));
-    cur_theta_eps = squeeze(theta_eps(:,i_dof,:));
-
-    % Update the mean
-    theta_new(i_dof,:) = sum(repmat(weights,1,n_dim).*cur_theta_eps,1);
-    
-    % Update covar
-    [covar_new(i_dof,:,:) covar_new_bounded(i_dof,:,:) ]...
-      = updatecovar(cur_theta,cur_covar,cur_theta_eps,weights,covar_update,covar_bounds,covar_lowpass,covar_scales);
-
-  end
-
+  % Evaluate the last batch of samples 
+  costs = task.perform_rollouts(task,theta_eps,plot_me);
+  
+  
   %------------------------------------------------------------------
-  % Bookkeeping.
-  node.theta = theta;
-  node.covar = covar;
-  node.theta_eps = theta_eps;
-  node.cost_eval = cost_eval;
-  node.costs_rollouts = costs_rollouts;
-  node.weights = weights;
-  node.theta_new = theta_new;
-  node.covar_new = covar_new;
-  node.covar_new_bounded = covar_new_bounded;
-
-  % Add this information to the history
-  learning_history = [learning_history node];
-
+  % More plotting
   if (plot_me)
     % Done with plotting of roll-outs
     subplot(n_dofs,4,1:4:n_dofs*4)
     hold off
 
-    plotlearninghistory(learning_history);
-    if (isfield(task,'plotlearninghistorycustom'))
-      figure(11)
-      task.plotlearninghistorycustom(learning_history)
+    if (i_update>0)
+      plotlearninghistory(learning_history);
+      if (isfield(task,'plotlearninghistorycustom'))
+        figure(11)
+        task.plotlearninghistorycustom(learning_history)
+      end
     end
-    %fprintf('Pausing... press key to continue.\n')
-    pause(0.5)
+    %pause; fprintf('Pausing... press key to continue.\n')
+    pause(0.1)
   end
-  
 
-  %------------------------------------------------------------------
-  % Replace the old with the new. Such is life.
-  theta = theta_new;
-  covar = covar_new_bounded;
-
+  i_update = i_update + 1;
 end
 
 % Done with optimizing. Return optimal (?) parameters
-theta_opt = theta;
+% These are the means of the distributions for each dof
+for i_dof=1:n_dofs
+  theta_opt(i_dof,:) = distributions(i_dof).mean;
+end
+
+% Main function done
+%-------------------------------------------------------------------------------
 
 
 
+%-------------------------------------------------------------------------------
+% Test function
   function [theta_opt learning_history] = testevolutionaryoptimization
 
     n_dims = 2;
@@ -151,33 +127,33 @@ theta_opt = theta;
     task = task_min_dist(target);
 
     % Initial parameters
-    theta_init = 10*ones(1,n_dims);
+    theta_init = 5*ones(1,n_dims);
     covar_init = 8*eye(n_dims);
     
     % Algorithm parameters
     n_updates = 25;
-    K = 15;
-    
-    weighting_method = 2; eliteness = ceil(0.5*K); % CMAES weighting
-    weighting_method = 3; eliteness=7; % PI2 weighting
-    
-    % covar_update = 0;    % Exploration does not change during learning
-    covar_update = 0.9;  % Decay exploration during learning
-    covar_update =  2;    % Reward-weighted averaging update of covar
-    if (covar_update>=1)
-      % For covariance matrix updating, a lower bound on the
-      % eigenvalues is recommended to avoid premature convergence
-      covar_bounds = [0.05 0.1 10]; %#ok<NBRAK> % Lower/upper bounds on covariance matrix
-    else
-      covar_bounds = []; % No bounds
-    end
+    n_samples = 15;
+    % Update parameters
+    update_parameters.weighting_method    = 'PI-BB'; % {'PI-BB','CMA-ES'}
+    update_parameters.eliteness           =      10;
+    update_parameters.covar_update        = 'PI-BB'; % {'PI-BB','CMA-ES'}
+    update_parameters.covar_full          =       0; % 0 -> diag, 1 -> full
+    update_parameters.covar_learning_rate =       1; % No lowpass filter
+    update_parameters.covar_bounds        =   [0.1]; %#ok<NBRAK> % Lower relative bound
+    update_parameters.covar_scales        =       1; % No scaling
 
     % Run optimization
     clf
-    [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,K,eliteness,weighting_method,covar_update,covar_bounds);
+    [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,update_parameters); %#ok<NASGU>
 
-
-    
+    test_backwards_compatibility=0;
+    if (test_backwards_compatibility)
+      % Test backwards compatibility
+      update_parameters.weighting_method    =       2;
+      update_parameters.covar_update        =       1;
+      [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,...
+        update_parameters.eliteness,update_parameters.weighting_method,update_parameters.covar_update,update_parameters.covar_bounds,update_parameters.covar_learning_rate,update_parameters.covar_scales);
+    end
     
     
     % Here is an example of how to design a task. This one simply returns the
@@ -185,28 +161,35 @@ theta_opt = theta;
     function [task] = task_min_dist(target)
 
       task.name = 'min_dist';
-      task.perform_rollout = @perform_rollout_min_dist;
+      task.perform_rollouts = @perform_rollouts_min_dist;
       task.target = target;
       task.n_dims = length(target);
 
       % Now comes the function that does the roll-out and visualization thereof
-      function cost = perform_rollout_min_dist(task,theta,plot_me,color)
-        % Cost is distance to dist
-        cost = sqrt(sum((theta(:)-target(:)).^2));
+      function costs = perform_rollouts_min_dist(task,thetas,plot_me,color)
+        thetas = squeeze(thetas); % Remove first dummy dimension
 
+        % Cost is distance to target
+        n_samples = size(thetas,1);
+        target_rep = repmat(target,n_samples,1);        
+        costs = sqrt(sum((thetas-target_rep).^2,2));
+        
         % Plot if necessary
         if (nargin>2 && plot_me)
           if (nargin<4)
             color = [0 0 0.6];
           end
           if (task.n_dims==2)
-            plot([task.target(1) theta(1)],[task.target(2) theta(2)],'-','Color',color)
-            plot(theta(1),theta(2),'o','Color',color)
+            for k=1:n_samples
+              plot([target_rep(k,1) thetas(k,1)],[target_rep(k,2) thetas(k,2)],'-','Color',color)
+            end
+            plot(thetas(1,1),thetas(1,2),'o','Color',0.5*color)
+            plot(thetas(2:end,1),thetas(2:end,2),'o','Color',color)
             axis equal
             axis([-10 10 -10 10])
           elseif (task.n_dims==3)
-            plot3([task.target(1) theta(1)],[task.target(2) theta(2)],[task.target(3) theta(3)],'-','Color',color)
-            plot3(theta(1),theta(2),theta(3),'o','Color',color)
+            plot3([target_rep(:,1) thetas(:,1)],[target_rep(:,2) thetas(:,2)],[target_rep(:,3) thetas(:,3)],'-','Color',color)
+            plot3(thetas(:,1),thetas(:,2),thetas(:,3),'o','Color',color)
             axis equal
             axis([-10 10 -10 10 -10 10])
             view(45,45)

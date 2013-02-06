@@ -9,7 +9,11 @@ end
 
 n_histories = length(learning_histories);
 n_updates = length(learning_histories{1});
-n_dofs = size(learning_histories{1}(1).theta,1);
+if (n_updates==1)
+  % Not much progress to plot with only one update
+  return
+end
+n_dofs = length(learning_histories{1}(1).distributions_new);
 
 if (nargin<3)
 exploration_curves = zeros(n_histories,n_updates,n_dofs);
@@ -17,7 +21,8 @@ for i_history=1:n_histories %#ok<FXUP>
   learning_history = learning_histories{i_history};
   for i_dof=1:n_dofs %#ok<FXUP>
     for hh=1:length(learning_history)
-      exploration_curves(i_history,hh,i_dof) = real(max(eig(squeeze(learning_history(hh).covar(i_dof,:,:))))); % HACK
+      covar = learning_history(hh).distributions(i_dof).covar;
+      exploration_curves(i_history,hh,i_dof) = real(max(eig(covar))); % HACK
     end
   end
 end
@@ -25,7 +30,7 @@ end
 % Take mean over all experiments
 exploration_curves = squeeze(mean(exploration_curves,1));
 % Compute cumulative exploration magnitudes
-cumsum_exploration_curves = cumsum(exploration_curves,2);
+cumsum_exploration_curves = cumsum(exploration_curves,2); %#ok<NASGU>
 end
 
 %----------------------------------------------------------
