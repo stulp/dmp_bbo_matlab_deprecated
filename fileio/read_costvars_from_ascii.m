@@ -15,4 +15,8 @@ for i_sample=1:n_samples
   cost_vars(i_sample,:,:) = load(filename);
 end
 
+% Increment update counter
+filename = sprintf('%s/current_update.txt',directory);
+dlmwrite(filename,current_update+1,' ');
+
 end
