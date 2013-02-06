@@ -39,7 +39,7 @@ for i_dof=i_dofs
         % theta_k
         plot(theta_k(1),theta_k(2),'o','MarkerFaceColor',[0.5 0.5 1.0],'MarkerEdgeColor','k')
       elseif (plot_n_dim==3)
-        warning('Cannot plot green circle representing weight in 3 dimensions') %#ok<WNTAG>
+        %warning('Cannot plot green circle representing weight in 3 dimensions') %#ok<WNTAG>
         % Line from current mean to theta_k
         plot3([theta(1) theta_k(1)],[theta(2) theta_k(2)],[theta(3) theta_k(3)],'-','Color',[0.5 0.5 1.0])
         hold on
