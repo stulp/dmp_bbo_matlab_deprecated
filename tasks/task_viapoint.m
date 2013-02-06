@@ -33,6 +33,32 @@ task.theta_init = zeros(2,2);
 
 addpath dynamicmovementprimitive/
 
+  function costs = evaluate_costs(task,ys,yds,ydds,plot_me,k)
+
+    dist_to_viapoint = sqrt(sum((ys(task.viapoint_time_step,:)-viapoint).^2));
+    costs(2) = dist_to_viapoint;
+
+    % Cost due to acceleration
+    sum_ydd = sum((sum(ydds.^2,2)));
+    costs(3) = sum_ydd/100000;
+
+    % Total cost is the sum of all the subcomponent costs
+    costs(1) = sum(costs(2:end));
+
+    if (nargin>4 && plot_me)
+      linewidth = 1;
+      color = 0.8*ones(1,3);
+      if (nargin>5 && k==1)
+        % Draw first rollout a bit differently
+        color=0.5*color;
+        linewidth = 3;
+      end
+      plot(ys(:,1),ys(:,2),'Color',color,'LineWidth',linewidth)
+      plot([task.viapoint(1) ys(task.viapoint_time_step,1)],[task.viapoint(2) ys(task.viapoint_time_step,2)],'Color',color)
+    end
+
+  end
+
 % Now comes the function that does the roll-out and visualization thereof
   function costs = perform_rollouts_viapoint(task,thetas,plot_me,color)
     
@@ -43,31 +69,7 @@ addpath dynamicmovementprimitive/
     
       trajectory = dmpintegrate(task.y0,task.g,theta,task.time,task.dt,task.time_exec);
 
-      % Cost due to distance from viapoint
-      ys = trajectory.y;
-      dist_to_viapoint = sqrt(sum((ys(task.viapoint_time_step,:)-viapoint).^2));
-      costs(k,2) = dist_to_viapoint;
-    
-      % Cost due to acceleration
-      ydds = trajectory.ydd;
-      sum_ydd = sum((sum(ydds.^2,2)));
-      costs(k,3) = sum_ydd/100000;
-
-      % Total cost is the sum of all the subcomponent costs
-      costs(k,1) = sum(costs(k,2:end));
-      
-      if (plot_me)
-        linewidth = 1;
-        if (nargin<4)
-          color = 0.8*ones(1,3);
-        end
-        if (k==1)
-          color=0.5*color;
-          linewidth = 3;
-        end
-        plot(ys(:,1),ys(:,2),'Color',color,'LineWidth',linewidth)
-        plot([task.viapoint(1) ys(task.viapoint_time_step,1)],[task.viapoint(2) ys(task.viapoint_time_step,2)],'Color',color)
-      end
+      costs(k,:) = evaluate_costs(task,trajectory.y,trajectory.yd,trajectory.ydd,plot_me,k);
 
     end
 
@@ -109,29 +111,7 @@ addpath dynamicmovementprimitive/
       yds  = squeeze(all_cost_vars(k,:,2:3:end));
       ydds = squeeze(all_cost_vars(k,:,3:3:end));
     
-      % Cost due to distance from viapoint
-      dist_to_viapoint = sqrt(sum((ys(task.viapoint_time_step,:)-viapoint).^2));
-      costs(k,2) = dist_to_viapoint;
-    
-      % Cost due to acceleration
-      sum_ydd = sum((sum(ydds.^2,2)));
-      costs(k,3) = sum_ydd/100000;
-
-      % Total cost is the sum of all the subcomponent costs
-      costs(k,1) = sum(costs(k,2:end));
-      
-      if (plot_me)
-        linewidth = 1;
-        if (nargin<4)
-          color = 0.8*ones(1,3);
-        end
-        if (k==1)
-          color=0.5*color;
-          linewidth = 3;
-        end
-        plot(ys(:,1),ys(:,2),'Color',color,'LineWidth',linewidth)
-        plot([task.viapoint(1) ys(task.viapoint_time_step,1)],[task.viapoint(2) ys(task.viapoint_time_step,2)],'Color',color)
-      end
+      costs(k,:) = evaluate_costs(task,ys,yds,ydds,plot_me,k);
 
     end
 
