@@ -12,7 +12,7 @@ end
 % Do some checks here
 if (strcmp(update_parameters.covar_update,'decay'));
   default_decay = 0.95;
-  if (~isfield(update_parameters,'decay'))
+  if (~isfield(update_parameters,'covar_decay'))
     warning('covar update method is decay, but no decay factor set. Setting to default: %1.2f',default_decay) %#ok<WNTAG>
     update_parameters.covar_decay = default_decay;
   else
