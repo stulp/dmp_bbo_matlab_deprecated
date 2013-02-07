@@ -90,7 +90,7 @@ bool readdmpparameters(char* base_directory, unsigned& current_update, unsigned&
   char outputdir[512];
   sprintf(outputdir,"%s/%03d_txt_files",base_directory,current_update);
   sprintf(filename,"%s/%02d_dmpparameters.txt",outputdir,1);
-  if (!readnumberofrowsandcolumns(filename,n_bases,n_dofs)) 
+  if (!readnumberofrowsandcolumns(filename,n_dofs,n_bases)) 
     return false;
   
   // Initialize array
