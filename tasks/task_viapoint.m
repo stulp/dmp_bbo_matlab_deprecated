@@ -9,6 +9,7 @@ if (nargin<5), evaluation_external_program = 0; end
 task.name = 'viapoint';
 if (evaluation_external_program)
   task.perform_rollouts = @perform_rollouts_viapoint_external;
+  addpath(genpath('fileio/'))
 else
   task.perform_rollouts = @perform_rollouts_viapoint;
 end

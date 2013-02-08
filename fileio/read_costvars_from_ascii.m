@@ -5,7 +5,7 @@ if (nargin<2)
   current_update = load(filename);
 end
 
-output_directory = sprintf('%s/%03d_txt_files',directory,current_update);
+output_directory = sprintf('%s/%03d_update/rollouts',directory,current_update);
 
 filename = sprintf('%s/number_of_trials.txt',output_directory);
 n_samples = load(filename);
