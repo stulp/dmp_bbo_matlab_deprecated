@@ -48,6 +48,10 @@ for i_dof=1:n_dofs
 end
 
 plot_me = 1;
+save_update_summaries = 0;
+if (save_update_summaries)
+  addpath(genpath('fileio/'))
+end
 
 %-------------------------------------------------------------------------------
 % Actual optimization loop
@@ -57,8 +61,11 @@ while (i_update<=n_updates)
   %------------------------------------------------------------------
   % Update parameters and sample next batch of thetas
   if (i_update>0)
-    [ distributions summary ] = update_distributions(distributions,theta_eps,costs,update_parameters);
-    learning_history(i_update) = summary;
+    [ distributions update_summary ] = update_distributions(distributions,theta_eps,costs,update_parameters);
+    learning_history(i_update) = update_summary;
+    if (save_update_summaries)
+      write_update_summary(task.name,i_update,update_summary)
+    end
   end
   
   %------------------------------------------------------------------
@@ -104,6 +111,9 @@ while (i_update<=n_updates)
 
   i_update = i_update + 1;
 end
+
+save(sprintf('%s_learning_history.mat',task.name),'learning_history');
+
 
 % Done with optimizing. Return optimal (?) parameters
 % These are the means of the distributions for each dof
