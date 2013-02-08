@@ -72,7 +72,7 @@ bool readcurrentupdate(char* base_directory, unsigned& current_update) {
 
 bool readnumberoftrials(char* base_directory, unsigned current_update, unsigned& n_trials) {
   char filename[512];
-  sprintf(filename,"%s/%03d_update/trajectories/number_of_trials.txt",base_directory,current_update);
+  sprintf(filename,"%s/%03d_update/rollouts/number_of_trials.txt",base_directory,current_update);
   return readintfromfile(filename, n_trials);
 }
 
@@ -88,7 +88,7 @@ bool readdmpparameters(char* base_directory, unsigned& current_update, unsigned&
 
   char filename[512];
   char outputdir[512];
-  sprintf(outputdir,"%s/%03d_update/trajectories",base_directory,current_update);
+  sprintf(outputdir,"%s/%03d_update/rollouts",base_directory,current_update);
   sprintf(filename,"%s/%02d_dmpparameters.txt",outputdir,1);
   if (!readnumberofrowsandcolumns(filename,n_dofs,n_bases)) 
     return false;
@@ -143,7 +143,7 @@ bool readtrajectories(char* base_directory, unsigned& current_update, unsigned& 
 
   char filename[512];
   char outputdir[512];
-  sprintf(outputdir,"%s/%03d_update/trajectories",base_directory,current_update);
+  sprintf(outputdir,"%s/%03d_update/rollouts",base_directory,current_update);
   sprintf(filename,"%s/%02d_traj_x.txt",outputdir,1);
   if (!readnumberofrowsandcolumns(filename,n_timesteps,n_dofs)) 
     return false;
@@ -209,7 +209,7 @@ bool writecostvars(char* base_directory, unsigned current_update, unsigned n_tri
   
   char filename[512];
   char outputdir[512];
-  sprintf(outputdir,"%s/%03d_update/trajectories",base_directory,current_update);
+  sprintf(outputdir,"%s/%03d_update/rollouts",base_directory,current_update);
   
   fstream filestr;
   for (int i_trials=0; i_trials<n_trials; i_trials++)
