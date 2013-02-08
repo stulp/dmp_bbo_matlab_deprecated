@@ -20,7 +20,7 @@ if (ndims(thetas)==2)
 end
 n_samples = size(thetas,2);
 
-output_directory = sprintf('%s/%03d_txt_files',directory,current_update);
+output_directory = sprintf('%s/%03d_update/trajectories',directory,current_update);
 if (~exist(output_directory,'dir'))
   mkdir(output_directory);
 end

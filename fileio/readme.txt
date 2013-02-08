@@ -1,26 +1,31 @@
 ________________________________________________________________________________
 RELEVANT FILES
 
-basename/                 Whichever you choose
-  current_update.txt      Contains one scalar number, representing the current update
+basename/                   Whichever you choose
 
-  001_txt_files/          Directory with files for the 1st update
-    number_of_trials.txt  Contains scalar: number of trials to execute for this update  
+  current_update.txt        Contains one scalar number, representing the current update
 
-    01_dmpparameters.txt  The DMP weights. Size: n_dofs x n_bases
+  001_update/               Directory with files for the 1st update
 
-    01_traj_x.txt         Trajectory position. Size: n_timesteps x n_dofs
-    01_traj_xd.txt        Trajectory velocity. Size: n_timesteps x n_dofs
-    01_traj_xdd.txt       Trajectory acceleration. Size: n_timesteps x n_dofs
+    update_summary.mat      Matlab variables summarizing the update
 
-    01_costvars.txt       Cost relevant variables. Size: n_timesteps x n_costvars
-                          Number of variables depends on task.
-
-    02_*                  As above, but for second trial
-    etc.                  Up to the number in number_of_trials.txt
+    rollouts/               Rollouts as txt files
+      number_of_trials.txt  Contains scalar: number of trials to execute for this update  
+  
+      01_dmpparameters.txt  The DMP weights. Size: n_dofs x n_bases
+  
+      01_traj_x.txt         Trajectory position. Size: n_timesteps x n_dofs
+      01_traj_xd.txt        Trajectory velocity. Size: n_timesteps x n_dofs
+      01_traj_xdd.txt       Trajectory acceleration. Size: n_timesteps x n_dofs
+  
+      01_costvars.txt       Cost relevant variables. Size: n_timesteps x n_costvars
+                            Number of variables depends on task.
+  
+      02_*                  As above, but for second trial
+      etc.                  Up to the number in number_of_trials.txt
 
     
-  002_txt_files/      Directory with files for the 2nd update
+  002_update/      Directory with files for the 2nd update
   etc.
 
 ________________________________________________________________________________
