@@ -23,12 +23,14 @@ fprintf('___________________________________________________________________\n')
 fprintf('PLOT ARMS\n')
 
 % Run a long optimization to visualize the optimal configuration for a viapoint
-viapoint = [0 0.85];
+viapoint = [0 0.5];
 if (force_redo_experiments || ~exist('results_arms','var') )
   n_experiments_per_task = 1;
   n_updates = 250;
   results_arms = maturationoptimization(link_lengths_per_arm,viapoint,n_experiments_per_task,n_updates);
 end
+
+return 
 
 figure(1)
 clf

@@ -5,9 +5,11 @@ if (nargin<4), n_updates = 20; end
 % Optimization parameters
 K = 20;
 
+n_dofs = size(link_lengths_per_arm,2);
+[task_solver] = task_maturation_solver(n_dofs);
+
 % Initial covariance matrix
-dummy_task = task_maturation(-1,-1); % Trick to get number of basis functions
-n_basisfunctions = dummy_task.n_basisfunctions;
+n_basisfunctions = task_solver.n_basisfunctions;
 covar_init = 0.05*eye(n_basisfunctions);
 
 % Update parameters
@@ -29,7 +31,7 @@ for arm_type=1:n_arm_types
     
     for i_experiment=1:n_experiments_per_task
       fprintf('arm_type=%d/%d, viapoint=[%1.2f %1.2f] (%d/%d), i_experiment=%d/%d \n',arm_type,n_arm_types,task.viapoint,i_viapoint,n_viapoints, i_experiment,n_experiments_per_task);
-      [theta_opt learning_history] = evolutionaryoptimization(task,task.theta_init,covar_init,n_updates,K,update_parameters);
+      [theta_opt learning_history] = evolutionaryoptimization(task,task_solver,task_solver.theta_init,covar_init,n_updates,K,update_parameters);
       learning_histories{arm_type,i_viapoint,i_experiment} = learning_history;
       
       %if (mod(i_experiment,10)==1)
