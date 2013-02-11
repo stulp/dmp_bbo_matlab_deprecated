@@ -3,6 +3,8 @@ if (nargin<1), goal_ball = zeros(1,3); end
 if (nargin<2), g  = [  1.271  -0.468   0.283   1.553   0.296  -0.000   0.591  ]; end
 if (nargin<3), y0   = [-0.274 -0.221  0.112  0.149 -0.001  0.001  0.104]; end
 
+error('This task has not been adapted to the new interface yet.')
+
 task.name = 'petanque_cb';
 task.perform_rollouts = @perform_rollout_viapoint;
 

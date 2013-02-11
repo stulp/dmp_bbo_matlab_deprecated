@@ -1,4 +1,4 @@
-function [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,update_parameters,varargin)
+function [theta_opt learning_history] = evolutionaryoptimization(task,task_solver,theta_init,covar_init,n_updates,n_samples,update_parameters,varargin)
 % Input:
 %  task              - task that should be optimized
 %  theta_init        - initial parameters
@@ -19,11 +19,11 @@ end
 %-------------------------------------------------------------------------------
 % Process arguments
 covar_default = eye(size(theta_init,2));
-if (nargin<3);  covar_init            = covar_default; end
-if (nargin<4);  n_updates             =            50; end
-if (nargin<5);  n_samples             =            10; end
+if (nargin<4);  covar_init            = covar_default; end
+if (nargin<5);  n_updates             =            50; end
+if (nargin<6);  n_samples             =            10; end
 
-if (nargin<6);  
+if (nargin<7);  
   % Get default update parameters
   update_parameters     = check_update_parameters; 
   
@@ -37,6 +37,9 @@ end
 
 % Sanity check on update parameters
 update_parameters     = check_update_parameters(update_parameters);
+
+% Should the first sample be the mean?
+first_is_mean = 1;
 
 [ n_dofs n_dims ] = size(theta_init); %#ok<NASGU>
 if (ndims(covar_init)==2)
@@ -70,34 +73,35 @@ while (i_update<=n_updates)
   
   %------------------------------------------------------------------
   % Sample from distributions
-  first_is_mean = 1;
   theta_eps = generate_samples(distributions,n_samples,first_is_mean);
+    
+  %------------------------------------------------------------------
+  % Perform rollouts for the samples in theta_eps
+  cost_vars = task_solver.perform_rollouts(task,theta_eps); 
   
   %------------------------------------------------------------------
-  % Prepare plotting of roll-outs if necessary
+  % Evaluate the last batch of rollouts 
+  costs = task.cost_function(task,cost_vars);
+
+  
+  
+  %------------------------------------------------------------------
+  % Plotting
   if (plot_me)
     figure(1)
     if (i_update==0), clf; end
+    
     % Very difficult to see anything in the plots for many dofs
     plot_n_dofs = min(n_dofs,3);
-    subplot(plot_n_dofs,4,1:4:plot_n_dofs*4)
-    cla
-    title('Visualization of roll-outs')
-    hold on
-  end
-  
-  %------------------------------------------------------------------
-  % Evaluate the last batch of samples 
-  costs = task.perform_rollouts(task,theta_eps,plot_me);
-  
-  
-  %------------------------------------------------------------------
-  % More plotting
-  if (plot_me)
-    % Done with plotting of roll-outs
-    subplot(n_dofs,4,1:4:n_dofs*4)
-    hold off
 
+    % Plot rollouts if the plot_rollouts function is available
+    if (isfield(task_solver,'plot_rollouts'))
+      subplot(plot_n_dofs,4,1:4:plot_n_dofs*4)
+      task_solver.plot_rollouts(gca,task,cost_vars)
+      title('Visualization of roll-outs')
+    end
+    
+    % Plot learning histories
     if (i_update>0)
       plotlearninghistory(learning_history);
       if (isfield(task,'plotlearninghistorycustom'))
@@ -105,8 +109,6 @@ while (i_update<=n_updates)
         task.plotlearninghistorycustom(learning_history)
       end
     end
-    %pause; fprintf('Pausing... press key to continue.\n')
-    pause(0.1)
   end
 
   i_update = i_update + 1;
@@ -135,6 +137,7 @@ end
     % Get the task (see nest function '[task] = task_min_dist(target)' below)
     target = zeros(1,n_dims);
     task = task_min_dist(target);
+    task_solver = task_solver_min_dist(task);
 
     % Initial parameters
     theta_init = 5*ones(1,n_dims);
@@ -154,7 +157,7 @@ end
 
     % Run optimization
     clf
-    [theta_opt learning_history] = evolutionaryoptimization(task,theta_init,covar_init,n_updates,n_samples,update_parameters); %#ok<NASGU>
+    [theta_opt learning_history] = evolutionaryoptimization(task,task_solver,theta_init,covar_init,n_updates,n_samples,update_parameters); %#ok<NASGU>
 
     test_backwards_compatibility=0;
     if (test_backwards_compatibility)
@@ -165,25 +168,17 @@ end
         update_parameters.eliteness,update_parameters.weighting_method,update_parameters.covar_update,update_parameters.covar_bounds,update_parameters.covar_learning_rate,update_parameters.covar_scales);
     end
     
-    
-    % Here is an example of how to design a task. This one simply returns the
-    % distance to the dist.
-    function [task] = task_min_dist(target)
+    function [task_solver] = task_solver_min_dist(task)
+      task_solver.name = 'min_dist';
+      task_solver.perform_rollouts = @perform_rollouts_min_dist;
 
-      task.name = 'min_dist';
-      task.perform_rollouts = @perform_rollouts_min_dist;
-      task.target = target;
-      task.n_dims = length(target);
-
-      % Now comes the function that does the roll-out and visualization thereof
-      function costs = perform_rollouts_min_dist(task,thetas,plot_me,color)
+      function cost_vars = perform_rollouts_min_dist(task,thetas,plot_me,color)
         thetas = squeeze(thetas); % Remove first dummy dimension
-
-        % Cost is distance to target
-        n_samples = size(thetas,1);
-        target_rep = repmat(target,n_samples,1);        
-        costs = sqrt(sum((thetas-target_rep).^2,2));
         
+        n_samples = size(thetas,1);
+        target_rep = repmat(task.target,n_samples,1);        
+        cost_vars = thetas;
+
         % Plot if necessary
         if (nargin>2 && plot_me)
           if (nargin<4)
@@ -205,6 +200,25 @@ end
             view(45,45)
           end
         end
+        
+      end
+    end
+    
+    % Here is an example of how to design a task. This one simply returns the
+    % distance to the dist.
+    function [task] = task_min_dist(target)
+
+      task.name = 'min_dist';
+      task.cost_function = @cost_function_min_dist;
+      task.target = target;
+      task.n_dims = length(target);
+
+      % Now comes the function that does the roll-out and visualization thereof
+      function costs = cost_function_min_dist(task,cost_vars)
+        % Cost is distance to target
+        n_samples = size(cost_vars,1);
+        target_rep = repmat(task.target,n_samples,1);        
+        costs = sqrt(sum((cost_vars-target_rep).^2,2));
 
       end
 

@@ -20,9 +20,9 @@ int main(int n_args, char** args)
   if (!readtrajectories(base_directory, current_update, n_trials, n_dofs, n_timesteps, trajectories))
     return -1;
 
-  double*** thetas = NULL;
-  if (!readdmpparameters(base_directory, current_update, n_trials, n_dofs, n_bases, thetas))
-    return -1;
+  //double*** thetas = NULL;
+  //if (!readdmpparameters(base_directory, current_update, n_trials, n_dofs, n_bases, thetas))
+  //  return -1;
   
   if (verbose) {
     printf("  current_update   = %d\n",current_update);
