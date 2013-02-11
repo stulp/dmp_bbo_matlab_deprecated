@@ -1,5 +1,5 @@
 TARGET = task_viapoint_external_cpp
-FILEIO_DIR = ../../fileio/cpp/
+FILEIO_DIR = ../../../fileio/cpp/
 
 all: ${TARGET}
 

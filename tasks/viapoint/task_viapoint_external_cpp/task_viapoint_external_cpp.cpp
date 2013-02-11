@@ -20,11 +20,18 @@ int main(int n_args, char** args)
   if (!readtrajectories(base_directory, current_update, n_trials, n_dofs, n_timesteps, trajectories))
     return -1;
 
-  double*** thetas = NULL;
-  if (!readdmpparameters(base_directory, current_update, n_trials, n_dofs, n_bases, thetas))
-    return -1;
+  //double*** thetas = NULL;
+  //if (!readdmpparameters(base_directory, current_update, n_trials, n_dofs, n_bases, thetas))
+  //  return -1;
   
-  
+  if (verbose) {
+    printf("  current_update   = %d\n",current_update);
+    printf("  n_trials         = %d\n",n_trials);
+    printf("  n_dofs           = %d\n",n_dofs);
+    printf("  n_bases          = %d\n",n_bases);
+    printf("  n_timesteps      = %d\n",n_timesteps);
+  }  
+
   //-----------------------------------------------------------------------------------------------  
   // Determine the cost-relevant variables from the trajectories
   
@@ -43,6 +50,7 @@ int main(int n_args, char** args)
   for (int i_trials=0; i_trials<n_trials; i_trials++)
   {
     printf("%d/%d  ",i_trials+1,n_trials);
+
     for (int i_timestep=0; i_timestep<n_timesteps; i_timestep++)
     {
       for (int i_dof=0; i_dof<n_dofs; i_dof++)
