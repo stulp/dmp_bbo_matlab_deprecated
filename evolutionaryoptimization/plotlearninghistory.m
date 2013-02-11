@@ -121,23 +121,27 @@ end
 
 
 % Plot learning curves
-std_costs_exploration = [];
+%std_costs_exploration = [];
+all_costs = [];
+n_rollouts_per_update = [];
 for hh=1:length(learning_history)
-  %exploit_times(hh) = length(costs_exploration)+1;
-  costs_exploitation(hh,:) = learning_history(hh).costs(1);
-  std_costs_exploration(hh,:) = sqrt(var(learning_history(hh).costs));
+  all_costs = [all_costs; learning_history(hh).costs];
+  n_rollouts_per_update(hh) = size(learning_history(hh).costs,1);
+  %std_costs_exploration(hh,:) = sqrt(var(learning_history(hh).costs));
 end
+evaluation_rollouts = cumsum([1 n_rollouts_per_update(1:end-1)]);
 
 subplot(plot_n_dofs,4,4:4:plot_n_dofs*4)
-plot(costs_exploitation,'-','LineWidth',2)
+plot(all_costs(:,1),'-','Color',0.8*ones(1,3))
 hold on
-plot(costs_exploitation(:,1)+std_costs_exploration(:,1),'-b');
-plot(costs_exploitation(:,1)-std_costs_exploration(:,1),'-b');
+plot(evaluation_rollouts,all_costs(evaluation_rollouts,1),'-','LineWidth',3)
+plot(evaluation_rollouts,all_costs(evaluation_rollouts,:),'-','LineWidth',1)
+
 hold off
 axis square
 %xlim([1 n_updates])
 title('Learning curve')
-legend('cost (total)')
+legend('cost (all rollouts)','cost (noise-free rollouts)')
 xlabel('number of updates')
 ylabel('costs')
 
