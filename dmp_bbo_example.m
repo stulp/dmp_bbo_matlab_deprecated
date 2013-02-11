@@ -3,8 +3,7 @@ addpath(genpath('evolutionaryoptimization/'))
 addpath(genpath('tasks/'))
 
 % Get the task to be optimized
-use_viapoint_task = 0;
-
+use_viapoint_task = 1;
 if (use_viapoint_task)
 
   % A very simple 2-D DMP viapoint task
@@ -14,7 +13,7 @@ if (use_viapoint_task)
 
   g                   = [1.0 1.0];
   y0                  = [0.0 0.0];
-  evaluation_external_program = 1; % This runs the evaluation of costs in an external program (i.e. not Matlab)
+  evaluation_external_program = 0; % This runs the evaluation of costs in an external program (i.e. not Matlab)
   task_solver = task_viapoint_solver_dmp(g,y0,evaluation_external_program);
 else
 

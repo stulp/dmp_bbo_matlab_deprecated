@@ -56,10 +56,11 @@ addpath dynamicmovementprimitive/
       
       ticks = 1:size(angles,1);
       color = 0.8*ones(1,3);
+      plot_me = 1;
       if (k==1)
         color = color*0.5;
+        plot_me = 2;
       end
-      plot_me = 1;
       x = getarmpos(angles,task.arm_length,ticks,plot_me,color);
       hold on
       plot(x(viapoint_time_step,1),x(viapoint_time_step,2),'ob')

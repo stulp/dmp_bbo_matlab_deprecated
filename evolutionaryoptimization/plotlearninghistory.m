@@ -142,7 +142,7 @@ axis square
 %xlim([1 n_updates])
 title('Learning curve')
 legend('cost (all rollouts)','cost (noise-free rollouts)')
-xlabel('number of updates')
+xlabel('number of evaluations')
 ylabel('costs')
 
 drawnow
