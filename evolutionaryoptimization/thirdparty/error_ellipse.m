@@ -111,20 +111,21 @@ if r==3 & c==3
   h3=plot3(x0+k*x,y0+k*y,z0+k*z,prop.style);hold on
 
   
-  [eigvec,eigval] = eig(C);
+  %[eigvec,eigval] = eig(C);
 
-  [X,Y,Z] = ellipsoid(0,0,0,1,1,1);
-  XYZ = [X(:),Y(:),Z(:)]*sqrt(eigval)*eigvec';
+  %[X,Y,Z] = ellipsoid(0,0,0,1,1,1);
+  %XYZ = [X(:),Y(:),Z(:)]*sqrt(eigval)*eigvec';
   
-  X(:) = scale*(k*XYZ(:,1)+x0);
-  Y(:) = scale*(k*XYZ(:,2)+y0);
-  Z(:) = scale*(k*XYZ(:,3)+z0);
-  h4=surf(X,Y,Z);
-  colormap gray
-  alpha(0.3)
-  camlight
+  %X(:) = scale*(k*XYZ(:,1)+x0);
+  %Y(:) = scale*(k*XYZ(:,2)+y0);
+  %Z(:) = scale*(k*XYZ(:,3)+z0);
+  %h4=surf(X,Y,Z);
+  %colormap gray
+  %alpha(0.3)
+  %camlight
   if nargout
-    h=[h1 h2 h3 h4];
+    h=[h1 h2 h3];
+    %h=[h1 h2 h3 h4];
   end
 elseif r==2 & c==2
   % Make the matrix has positive eigenvalues - else it's not a valid covariance matrix!
