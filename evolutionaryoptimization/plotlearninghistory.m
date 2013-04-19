@@ -9,7 +9,7 @@ if (nargin<2), highlight=0; end
 
 
 n_dofs = length(learning_history(1).distributions_new);
-n_dim = length(learning_history(1).distributions_new(1).mean);
+n_dims = length(learning_history(1).distributions_new(1).mean);
 
 % Very difficult to see anything in the plots for many dofs
 plot_n_dofs = min(n_dofs,3);
@@ -48,7 +48,9 @@ for i_dof=1:plot_n_dofs %#ok<FXUP>
     highlight = (hh==length(learning_history));
     plot_samples = (hh==length(learning_history));
     summary = learning_history(hh);
-    update_distributions_visualize(summary,highlight,plot_samples,i_dof)
+    if (n_dims<3)
+      update_distributions_visualize(summary,highlight,plot_samples,i_dof)
+    end
 
     axis square
     axis equal
@@ -132,7 +134,7 @@ end
 evaluation_rollouts = cumsum([1 n_rollouts_per_update(1:end-1)]);
 
 subplot(plot_n_dofs,4,4:4:plot_n_dofs*4)
-plot(all_costs(:,1),'-','Color',0.8*ones(1,3))
+plot(all_costs(:,1),'.','Color',0.8*ones(1,3))
 hold on
 plot(evaluation_rollouts,all_costs(evaluation_rollouts,1),'-','LineWidth',3)
 plot(evaluation_rollouts,all_costs(evaluation_rollouts,:),'-','LineWidth',1)
