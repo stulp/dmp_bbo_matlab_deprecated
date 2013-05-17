@@ -14,7 +14,7 @@ for switch_g = 0:1
   end
   task = task_predictme(g,y0,g_distract);
   
-  n_learning_sessions = 5;
+  n_learning_sessions = 3;
   clear learning_histories
   figure(1)
   for i_learning_session=1:n_learning_sessions
