@@ -32,7 +32,7 @@ task_solver.activations = basisfunctionactivations(centers,widths,ts);
     n_rollouts = size(cost_vars,1);
     for k=1:n_rollouts
       angles= squeeze(cost_vars(k,:,1:3:end-1));
-      plot_me = 1;
+      plot_me = 1 + (k==1);
       getarmpos(angles,task.link_lengths,1:2:n_time_steps,plot_me);
       hold on
     end

@@ -43,6 +43,7 @@ if (plot_me)
   % End-effector path
   plot(squeeze(x_links(ticks,end,1)),squeeze(x_links(ticks,end,2)),'k','LineWidth',1,'Color',color)
   hold on
+  plot(squeeze(x_links(end,end,1)),squeeze(x_links(end,end,2)),'or')
   
   if (plot_me>1)
     % Bonus plotting
