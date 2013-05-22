@@ -1,5 +1,15 @@
 function [ learning_histories viapoints ] = maturationoptimization(link_lengths_per_arm,viapoints,n_experiments_per_task,n_updates)
-if (nargin<3), n_experiments_per_task = 10; end
+if (nargin<1)
+  % Arm settings
+  n_dofs = 6;
+  arm_length = 1;
+  arm_type = 1;
+  link_lengths_per_arm(1,:) = getlinklengths(arm_type,n_dofs,arm_length);
+end
+if (nargin<2)
+  viapoints = [0 0.5];
+end
+if (nargin<3), n_experiments_per_task = 1; end
 if (nargin<4), n_updates = 20; end
 
 % Optimization parameters
