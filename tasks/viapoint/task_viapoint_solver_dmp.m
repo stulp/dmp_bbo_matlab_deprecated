@@ -54,7 +54,10 @@ addpath dynamicmovementprimitive/
 
     plot(task.viapoint(1),task.viapoint(2),'og')
     
+    xlabel('x_1 (DMP output dim=1)')
+    ylabel('x_2 (DMP output dim=2)')
     hold off
+    axis equal
     axis([-0.1 1.1 -0.1 1.1])
   end
 
