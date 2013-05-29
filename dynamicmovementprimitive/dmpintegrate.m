@@ -63,7 +63,6 @@ end
 
 %-------------------------------------------------------------------------------
 % Integrate canonical system in closed form
-order = 2;
 [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
 % Duration of the motion in time steps
 T = length(xs);
@@ -81,122 +80,40 @@ activations = basisfunctionactivations(centers,widths,xs);
 canonical_at_centers = vs(max_activation_indices)';
 
 %-------------------------------------------------------------------------------
-% Initialization
-
-% Initialize arrays
-gs = zeros(T,1);
-zs = zeros(T,1);
-zds = zeros(T,1);
-ys = zeros(T,1);
-yds = zeros(T,1);
-ydds = zeros(T,1);
-
-% Initialize and integrate transformation systems
-alpha_z = 14.0;
-beta_z = alpha_z/4.0;
-alpha_g = alpha_z/2.0;
-
-%-------------------------------------------------------------------------------
 % Each dimension integrated separately
 for i_dim = 1:n_dim
 
-  % Compute sum(phi*wi)/sum(phi)
-  weighted_sum_activations = sum(activations.*repmat(theta(i_dim,:),T,1),2);
-  sum_activations = sum(activations,2);
-  f = (weighted_sum_activations./sum_activations).*vs;
-
-  ys(1) = y0(i_dim);
-  yds(1) = 0.0;
-  ydds(1) = 0.0;
-  zs(1) = 0.0;
-  zds(1) = 0.0;
-  gs(1) = 0.0;
-  gds(1) = alpha_g*g(i_dim);
-  
-  %-------------------------------------------------------------------------------
-  % Integration
-  for tt=1:T-1
-    %nonlinear = f(tt)*A;       % NONLIN_AMPLITUDE
-    nonlinear = f(tt)*(g(i_dim)-y0(i_dim));  % NONLIN_GOAL
-    %nonlinear = 0;             % NONLIN_ZERO
-    %g_cur = gs(tt-1);          % GOAL_DISCONTINUOUS
-    g_cur = g(i_dim);                 % GOAL_CONTINUOUS
-
-    % Use one second order system (alternative: 2 first order systems)
-    ydds(tt+1) = alpha_z*(beta_z*(g_cur-ys(tt))-yds(tt)) + nonlinear;
-
-    % Integrate acceleration to get velocity and position
-    yds(tt+1) = yds(tt) + dt*ydds(tt+1);
-    ys(tt+1)  =  ys(tt) + dt* yds(tt+1);
-    
-    % Goal integration (for smooth adaptation to changing goals)
-    gds(tt+1) = alpha_g*(g((i_dim))-gs(tt));
-    gs(tt+1)  =  gs(tt) + dt* gds(tt+1);
-
-  end
-
-  trajectory.t = ts;
-  trajectory.y(:,i_dim) = ys;
-  trajectory.yd(:,i_dim) = yds;
-  trajectory.ydd(:,i_dim) = ydds;
-  
-  % Plot if necessary
+  % Integrate this transformation system
   if (figure_handle)
-    n_rows = n_dim;
-    n_cols = 8;
-
-    subplot(n_rows,n_cols,n_cols*(i_dim-1) + 1); 
-    plot(ts,activations)
-    axis tight; xlabel('t (s)'); ylabel('\Psi(x)')
-    title('basis functions')
-    
-    subplot(n_rows,n_cols,n_cols*(i_dim-1) + 2); 
-    stem(theta(i_dim,:))
-    axis tight; xlabel('b'); ylabel('$\theta_b$','Interpreter','LaTex')
-    axis([0 n_basis_functions+1, min(min(theta)) max(max(theta))]);
-    title('weights (\theta)')
-        
-    subplot(n_rows,n_cols,n_cols*(i_dim-1) + 3); 
-    plot(ts,weighted_sum_activations./sum_activations)
-    axis tight; xlabel('t (s)'); ylabel('$\frac{\sum\Psi(x)\theta}{\sum\Psi(x)}$','Interpreter','LaTex')
-    title('weighted basis functions')
-
-    subplot(n_rows,n_cols,n_cols*(i_dim-1) + 4); 
-    plot(ts,vs)
-    axis tight; xlabel('t (s)'); ylabel('v')
-    title('canonical system (v)')
-    
-    subplot(n_rows,n_cols,n_cols*(i_dim-1) + 5);
-    plot(ts,f)
-    axis tight; xlabel('t (s)'); ylabel('f')
-    title('nonlinear component (v)')
-
-    subplot(n_rows,n_cols,n_cols*(i_dim-1) + 6);
-    plot(ts,ydds)
-    axis tight; xlabel('t (s)'); ylabel(['ydd_' num2str(i_dim)])
-    title('acceleration')
-    
-    subplot(n_rows,n_cols,n_cols*(i_dim-1) + 7);
-    plot(ts,ys)
-    axis tight; xlabel('t (s)'); ylabel(['y_' num2str(i_dim)])
-    title('position')
-
-    if (i_dim==n_dim && n_dim>1)
-      subplot(n_rows,n_cols,n_cols*((1:i_dim)-1) + 8);
-      if (n_dim>2)
-        plot3(trajectory.y(:,1,1),trajectory.y(:,2,1),trajectory.y(:,3,1));
-        zlabel('y_3'); 
-      else
-        plot(trajectory.y(:,1,1),trajectory.y(:,2,1));
-      end
-      xlabel('y_1'); ylabel('y_2')
-      axis equal
-      axis square
-      axis tight; 
-    end
-    
+    figure_handle_per_dim = figure_handle+i_dim;
+  else
+    figure_handle_per_dim = 0;
   end
-
+  trajectory_per_dim = transformationintegrate(y0(i_dim),g(i_dim),theta(i_dim,:),xs,vs,dt,figure_handle_per_dim);
+ 
+  trajectory.t = ts;
+  trajectory.y(:,i_dim)   = trajectory_per_dim.y;
+  trajectory.yd(:,i_dim)  = trajectory_per_dim.yd;
+  trajectory.ydd(:,i_dim) = trajectory_per_dim.ydd;
+end
+  
+% Plot if necessary
+if (figure_handle)
+  
+  figure(figure_handle)
+  if (n_dim>1)
+    if (n_dim>2)
+      plot3(trajectory.y(:,1,1),trajectory.y(:,2,1),trajectory.y(:,3,1));
+      zlabel('y_3');
+    else
+      plot(trajectory.y(:,1,1),trajectory.y(:,2,1));
+    end
+    xlabel('y_1'); ylabel('y_2')
+    axis equal
+    axis square
+    axis tight;
+  end
+    
 end
 
 
