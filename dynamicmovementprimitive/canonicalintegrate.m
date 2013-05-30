@@ -13,7 +13,7 @@ function [ts xs xds vs vds alpha] = canonicalintegrate(time,dt,time_exec,order,a
 % Output:
 %   ts            - time over time ;-)
 %   xs,xds,vs,vds - state of the canonical system over time
-%   alpha         - time constant, determined speed of convergence
+%   alpha         - time constant, determines speed of convergence
 
 if (nargin==0)
   % If no arguments are passed, test the function

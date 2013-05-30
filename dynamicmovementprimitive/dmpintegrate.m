@@ -1,10 +1,10 @@
-function [ trajectory activations canonical_at_centers ] = dmpintegrate(y0,g,theta,time,dt,time_exec,order,figure_handle)
+function [ trajectory activations canonical_at_centers handle ] = dmpintegrate(y0,g,theta,time,dt,time_exec,order,figure_handle)
 % Integrate a Dynamic Movement Primitive
 %
 % Input:
-%   y0            - initial state
-%   g             - goal state
-%   theta         - DMP parameters (i.e. 'weights')
+%   y0            - initial state (1 x n_trans)
+%   g             - goal state (1 x n_trans)
+%   theta         - DMP parameters, i.e. 'weights' (n_basis_functions x n_trans)
 %   time          - duration of the observed movement
 %   dt            - duration of the integration step
 %   time_exec     - duration of the integration
@@ -13,17 +13,18 @@ function [ trajectory activations canonical_at_centers ] = dmpintegrate(y0,g,the
 % Output:
 %   trajectory    - the trajectory that results from integration.
 %                   this is a structure that contains
-%                      trajectory.t   - times
-%                      trajectory.y   - position over time (for each dimension)
-%                      trajectory.yd  - velocity over time (for each dimension)
-%                      trajectory.ydd - acceleration over time (for each dimension)
+%                      trajectory.t   - times (T x 1)
+%                      trajectory.y   - position over time (T x n_trans)
+%                      trajectory.yd  - velocity over time (T x n_trans)
+%                      trajectory.ydd - acceleration over time (T x n_trans)
 %   activations - activations of the basis functions at each time step
 %   canonical_at_centers - value of the canonical system at the centers of the
 %                          basis functions
+%   handle - handle to the graph that is plotted if figure_handle>0
 
 if (nargin==0)
   % If no arguments are passed, test the function
-  trajectory = testdmpintegrate;
+  [ trajectory activations canonical_at_centers handle ] = testdmpintegrate;
   return;
 end
 
@@ -36,36 +37,34 @@ if (nargin<8), figure_handle = 0; end
 
 %-------------------------------------------------------------------------------
 % Check for consistency of dimensions, etc.
-n_dim = size(y0,2);
-if (size(g,2)~=n_dim)
+n_trans = size(y0,2);
+if (size(g,2)~=n_trans)
   error(sprintf('Since y0 is %d X %d, g must be %d X %d, but it is %d X %d : ABORT.',size(y0),size(y0),size(g))) %#ok<SPERR>
 end
-% Theta is always a 1 x M vector. But DMPs require n_dim x n_basis_functions. So
+% Theta is always a 1 x M vector. But DMPs require n_trans x n_basis_functions. So
 % we have to reshape it here.
 
 % Theta may have two forms
-% N x M, where N=n_dim and M=n_basisfunctions
-% 1 x M, where M=n_dim*n_basisfunctions
+% N x M, where N=n_trans and M=n_basisfunctions
+% 1 x M, where M=n_trans*n_basisfunctions
 %   In the latter case, we have to reshape it into the first case
 [ n m ] = size(theta);
 if (n==1)
-  if (mod(m,n_dim)>0)
-    error(sprintf('If theta is 1 x M, then M must be a multiple of n_dim.  But %d is NOT a multiple of %d : ABORT.',m,n_dim)) %#ok<SPERR>
+  if (mod(m,n_trans)>0)
+    error(sprintf('If theta is 1 x M, then M must be a multiple of n_trans.  But %d is NOT a multiple of %d : ABORT.',m,n_trans)) %#ok<SPERR>
   else
-    theta = reshape(theta,m/n_dim,n_dim)';
+    theta = reshape(theta,m/n_trans,n_trans)';
   end
-elseif (n~=n_dim)
-  error(sprintf('theta must be\n  1 X (n_dim*n_basis_functions)\nor\n  n_dim X n_basis_functions\nbut it is %d X %d and n_dim=%d : ABORT.',size(theta),n_dim)) %#ok<SPERR>
+elseif (n~=n_trans)
+  error(sprintf('theta must be\n  1 X (n_trans*n_basis_functions)\nor\n  n_trans X n_basis_functions\nbut it is %d X %d and n_trans=%d : ABORT.',size(theta),n_trans)) %#ok<SPERR>
 end
 % All good now, theta already in correct shape for DMP
-[ n_dim n_basis_functions ] = size(theta);
+[ n_trans n_basis_functions ] = size(theta);
 
 
 %-------------------------------------------------------------------------------
 % Integrate canonical system in closed form
 [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
-% Duration of the motion in time steps
-T = length(xs);
 
 
 %-------------------------------------------------------------------------------
@@ -81,56 +80,76 @@ canonical_at_centers = vs(max_activation_indices)';
 
 %-------------------------------------------------------------------------------
 % Each dimension integrated separately
-for i_dim = 1:n_dim
+for i_trans = 1:n_trans
 
   % Integrate this transformation system
   if (figure_handle)
-    figure_handle_per_dim = figure_handle+i_dim;
+    figure_handle_per_trans = figure_handle+i_trans-1;
   else
-    figure_handle_per_dim = 0;
+    figure_handle_per_trans = 0;
   end
-  trajectory_per_dim = transformationintegrate(y0(i_dim),g(i_dim),theta(i_dim,:),xs,vs,dt,figure_handle_per_dim);
+  trajectory_per_trans = transformationintegrate(y0(i_trans),g(i_trans),theta(i_trans,:),xs,vs,dt,figure_handle_per_trans);
  
   trajectory.t = ts;
-  trajectory.y(:,i_dim)   = trajectory_per_dim.y;
-  trajectory.yd(:,i_dim)  = trajectory_per_dim.yd;
-  trajectory.ydd(:,i_dim) = trajectory_per_dim.ydd;
+  trajectory.y(:,i_trans)   = trajectory_per_trans.y;
+  trajectory.yd(:,i_trans)  = trajectory_per_trans.yd;
+  trajectory.ydd(:,i_trans) = trajectory_per_trans.ydd;
+  
+  if (figure_handle)
+    set(gcf,'Name',sprintf('Transformation System %d',i_trans));
+  end
+
 end
   
 % Plot if necessary
+handle = [];
 if (figure_handle)
+  figure(figure_handle+n_trans)
+  clf
   
-  figure(figure_handle)
-  if (n_dim>1)
-    if (n_dim>2)
-      plot3(trajectory.y(:,1,1),trajectory.y(:,2,1),trajectory.y(:,3,1));
+  if (n_trans>1)
+    if (n_trans>2)
+      plot3(trajectory.y(1,1,1),trajectory.y(1,2,1),trajectory.y(1,3,1),'o','MarkerFaceColor','r','MarkerEdgeColor','none');
+      hold on
+      plot3(trajectory.y(end,1,1),trajectory.y(end,2,1),trajectory.y(end,3,1),'o','MarkerFaceColor','g','MarkerEdgeColor','none');
+      handle = plot3(trajectory.y(:,1,1),trajectory.y(:,2,1),trajectory.y(:,3,1));
       zlabel('y_3');
     else
-      plot(trajectory.y(:,1,1),trajectory.y(:,2,1));
+      plot(trajectory.y(1,1,1),trajectory.y(1,2,1),'o','MarkerFaceColor','r','MarkerEdgeColor','none');
+      hold on
+      plot(trajectory.y(end,1,1),trajectory.y(end,2,1),'o','MarkerFaceColor','g','MarkerEdgeColor','none');
+      handle = plot(trajectory.y(:,1,1),trajectory.y(:,2,1));
+      hold off
     end
+    legend('y_0','g','Location','EastOutside')
     xlabel('y_1'); ylabel('y_2')
     axis equal
     axis square
     axis tight;
   end
+
+  set(handle,'LineWidth',2);
+  set(handle,'Color',[0.4 0.4 0.8]);
+
+  set(gcf,'Name',sprintf('%dD DMP',n_trans));
     
 end
 
-
-  function trajectory = testdmpintegrate
+  function [ trajectory activations canonical_at_centers handle ] = testdmpintegrate
     
     % Integrate and plot a 2-D DMP with random weights
     n_basis_functions = 8;
-    y0 = [0 0.1];
-    g  = [1 0.9];
-    theta = 10*randn(length(g),n_basis_functions);
+    y0 = [-2 0.1];
+    g  = [1.3 0.9];
+    n_trans = length(g);
+    theta = 10*randn(n_trans,n_basis_functions);
     time = 2;
     dt = 1/100;
     time_exec = 2.5;
     order = 2;
-    figure_handle = 1;
     
-    trajectory = dmpintegrate(y0,g,theta,time,dt,time_exec,order,figure_handle);
+    figure_handle = 1;
+    [ trajectory activations canonical_at_centers handle ] = dmpintegrate(y0,g,theta,time,dt,time_exec,order,figure_handle);
     
   end
 
