@@ -1,4 +1,4 @@
-function [ theta y0 g ] = transformationtrain(trajectory,n_basis_functions,xs,vs,figure_handle)
+function [ theta y0 g0 ] = transformationtrain(trajectory,n_basis_functions,xs,vs,time,figure_handle)
 % Train one transformation system of a Dynamic Movement Primitive
 %
 % Input:
@@ -19,7 +19,7 @@ function [ theta y0 g ] = transformationtrain(trajectory,n_basis_functions,xs,vs
 
 if (nargin==0)
   % If no arguments are passed, test the function
-  [ theta y0 g ] = testtransformationtrain;
+  [ theta y0 g0 ] = testtransformationtrain;
   return;
 end
 
@@ -28,19 +28,23 @@ end
 %if (nargin<2), n_basis_functions = 8; end
 %if (nargin<3), canonical_order   = 2; end
 %if (nargin<4), canonical_alpha  = 15; end
-if (nargin<5), figure_handle     = 0; end
+if (nargin<6), figure_handle     = 0; end
 
 
 
 %-------------------------------------------------------------------------------
 % Initialization
 y0 = trajectory.y(1);
-g  = trajectory.y(end);
+g0  = trajectory.y(end);
 
 % Compute target non-linear component f
 alpha_z = 14.0;
 beta_z = alpha_z/4.0;
-f_target = (-alpha_z*(beta_z*(g-trajectory.y)-trajectory.yd) + trajectory.ydd)/(g-y0);
+alpha_g = alpha_z/2.0;
+
+gs  = g0+exp(-alpha_g*trajectory.t/time)*(y0-g0);
+  
+f_target = (-alpha_z*(beta_z*(gs-trajectory.y)-trajectory.yd) + time*trajectory.ydd)/(g0-y0);
 
 %-------------------------------------------------------------------------------
 % Get basis function activations
@@ -67,26 +71,26 @@ if (figure_handle)
   
   % Execute and plot with the theta we have just computed
   dt = mean(diff(trajectory.t));
-  [traj handles ] = transformationintegrate(y0,g,theta,xs,vs,dt,figure_handle);
+  [traj handles ] = transformationintegrate(y0,g0,theta,xs,vs,dt,time,figure_handle);
 
   n_rows = 3;
-  n_cols = 4;
+  n_cols = 5;
   h = [];
   
   ts = trajectory.t;
   
   % Overlay the train trajectory 
-  subplot(n_rows,n_cols,4+0*n_cols);
+  subplot(n_rows,n_cols,5+0*n_cols);
   hold on
   h(end+1) = plot(ts,trajectory.ydd);
   hold off
 
-  subplot(n_rows,n_cols,4+1*n_cols);
+  subplot(n_rows,n_cols,5+1*n_cols);
   hold on
   h(end+1) = plot(ts,trajectory.yd);
   hold off
 
-  subplot(n_rows,n_cols,4+2*n_cols);
+  subplot(n_rows,n_cols,5+2*n_cols);
   hold on
   h(end+1) = plot(ts,trajectory.y);
   hold off
@@ -106,28 +110,28 @@ end
   function [ theta y0 g ] = testtransformationtrain
 
     % Integrate canonical system
-    dt = 1/100;
+    dt = 1/250;
     time = 2;
-    time_exec = 2.5;
-    order = 1;
+    time_exec = 3;
+    order = 3;
     [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
 
     % Integrate and plot a transformation system with random weights
-    n_basis_functions = 8;
-    y0 = 0;
-    g  = 1;
-    theta_known = 100*randn(1,n_basis_functions);
+    y0 = 5;
+    g  = 4;
+    n_basis_functions=8;
+    theta_known = 50*randn(1,n_basis_functions);
     
-    trajectory = transformationintegrate(y0,g,theta_known,xs,vs,dt);
+    trajectory = transformationintegrate(y0,g,theta_known,xs,vs,dt,time);
     
     figure_handle = 1;
-    [ theta y0 g ] = transformationtrain(trajectory,n_basis_functions,xs,vs,figure_handle);
+    [ theta y0 g0 ] = transformationtrain(trajectory,n_basis_functions,xs,vs,time,figure_handle);
     
     n_rows=3;
-    n_cols=4;
-    subplot(n_rows,n_cols,2+1*n_cols);
+    n_cols=5;
+    subplot(n_rows,n_cols,3+1*n_cols);
     hold on
-    h = stem(theta);
+    h = stem(theta_known);
     set(h,'LineWidth',1);
     set(h,'Color',[0.0 0.0 0.5]);
     hold off

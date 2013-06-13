@@ -76,6 +76,20 @@ elseif (order==2)
   %vs = xds*time;
   vs = B.*exp((-omega_0/time)*ts) -omega_0*(A+(B/time)*ts).*exp((-omega_0/time)*ts);
   vds = (-omega_0/time)*B.*exp((-omega_0/time)*ts) - omega_0*(B/time).*exp((-omega_0/time)*ts) -omega_0*(-omega_0/time)*(A+(B/time)*ts).*exp((-omega_0/time)*ts);
+elseif (order==3)
+  
+  % Closed form solution to 1st order canonical system 
+  alpha = -log(0.001);
+  xs  = exp(-alpha*ts/time);
+  xds = -(alpha/time)*exp(-alpha*ts/time);
+  
+  % Sigmoid for the hull
+  final = 0.01;
+  sigmoid_time = 0.5*time;
+  c = log((1/final)-1)/(0.5*sigmoid_time);
+  vs = 1-(1./(1+exp(-c*(ts-time+0.5*sigmoid_time))));%.^(1/4);
+  vds = -c*(1./(1+exp(-c*(ts-time+0.5*sigmoid_time)))).*(1-1./(1+exp(-c*(ts-time+0.5*sigmoid_time))));
+  
 end
 
 

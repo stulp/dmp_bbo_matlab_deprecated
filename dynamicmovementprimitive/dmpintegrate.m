@@ -88,7 +88,7 @@ for i_trans = 1:n_trans
   else
     figure_handle_per_trans = 0;
   end
-  trajectory_per_trans = transformationintegrate(y0(i_trans),g(i_trans),theta(i_trans,:),xs,vs,dt,figure_handle_per_trans);
+  trajectory_per_trans = transformationintegrate(y0(i_trans),g(i_trans),theta(i_trans,:),xs,vs,dt,time,figure_handle_per_trans);
  
   trajectory.t = ts;
   trajectory.y(:,i_trans)   = trajectory_per_trans.y;
@@ -139,14 +139,14 @@ end
     
     % Integrate and plot a 2-D DMP with random weights
     n_basis_functions = 8;
-    y0 = [-2 0.1];
-    g  = [1.3 0.9];
+    y0 = [ 1.3 0.1];
+    g  = [-2.0 0.9];
     n_trans = length(g);
-    theta = 10*randn(n_trans,n_basis_functions);
+    theta = 25*randn(n_trans,n_basis_functions);
     time = 2;
     dt = 1/100;
-    time_exec = 2.5;
-    order = 2;
+    time_exec = 3;
+    order = 3;
     
     figure_handle = 1;
     [ trajectory activations canonical_at_centers handle ] = dmpintegrate(y0,g,theta,time,dt,time_exec,order,figure_handle);

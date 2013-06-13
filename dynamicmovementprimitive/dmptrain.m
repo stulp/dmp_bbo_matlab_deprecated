@@ -25,7 +25,7 @@ end
 
 %-------------------------------------------------------------------------------
 % Default values
-if (nargin<3), figure_handle = 0; end
+if (nargin<4), figure_handle = 0; end
 
 %-------------------------------------------------------------------------------
 % Integrate canonical system in closed form
@@ -56,7 +56,7 @@ for i_trans = 1:n_trans
   trajectory_per_dim.yd  = trajectory.yd(:,i_trans); 
   trajectory_per_dim.ydd = trajectory.ydd(:,i_trans); 
   
-  [ theta(i_trans,:) y0(i_trans) g(i_trans) ] =  transformationtrain(trajectory_per_dim,n_basis_functions,xs,vs,figure_handle_per_dim);
+  [ theta(i_trans,:) y0(i_trans) g(i_trans) ] =  transformationtrain(trajectory_per_dim,n_basis_functions,xs,vs,time,figure_handle_per_dim);
  
 end
 
@@ -64,6 +64,7 @@ if (figure_handle)
   figure(figure_handle+n_trans)
 
   % Reproduce the trajectory
+  time_exec = 1.25*time;
   [ trajectory ] = dmpintegrate(y0,g,theta,time,dt,time_exec,order);
   hold on
   if (n_trans>2)
@@ -80,19 +81,29 @@ end
     
 
 
-  function [ theta y0 g ] = testdmptrain
+  function [ theta y0 g0 ] = testdmptrain
 
-    % Get a random trajectory by integrating a DMP
-    [ trajectory activations canonical_at_centers handle ] = dmpintegrate; %#ok<NASGU>
+    % Get a trajectory by integrating a DMP
+    n_basis_functions = 8;
+    n_trans = 2;
+    theta = 25*randn(n_trans,n_basis_functions);
+
+    y0 = [ 1.3 0.1];
+    g  = [-2.0 0.9];
+    time = 2;
+    dt = 1/100;
+    time_exec = time;
+    order = 3;
+    
+    % Generate a trajectory
+    figure_handle = 1;
+    [ trajectory activations canonical_at_centers handle ] = dmpintegrate(y0,g,theta,time,dt,time_exec,order,figure_handle);
     % Make original trajectories thick and bright
     set(handle,'LineWidth',3);
     set(handle,'Color',[0.7 0.7 1]);
     
     % Train a DMP with this trajectory
-    n_basis_functions = 10;
-    order = 1;
-    figure_handle = 1;
-    [ theta y0 g ] = dmptrain(trajectory,order,n_basis_functions,figure_handle);
+    [ theta y0 g0 ] = dmptrain(trajectory,order,n_basis_functions,figure_handle);
 
   end
 
