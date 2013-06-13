@@ -2,7 +2,7 @@ function [ts xs xds vs vds alpha] = canonicalintegrate(time,dt,time_exec,order,a
 % Integrate a canonical system for 'ceil(1+time_exec/dt)' time steps of duration 'dt'
 %
 % This function uses the closed-form solution of the dynamical system 
-% representing the canonical system, so it is fast.
+% representing the canonical system.
 %
 % Input:
 %   time          - duration of the observed movement
@@ -17,7 +17,7 @@ function [ts xs xds vs vds alpha] = canonicalintegrate(time,dt,time_exec,order,a
 
 if (nargin==0)
   % If no arguments are passed, test the function
-  [ts xs xds vs vds] = testcanonicalintegrate;
+  [ts xs xds vs vds alpha] = testcanonicalintegrate;
   return;
 end
 
@@ -26,8 +26,11 @@ if (nargin<3), time_exec = time; end
 if (nargin<4), order = 2; end
 if (nargin<5), 
   if (order==1)
+    % Set alpha such that the canonical system is 0.001 at the end of the
+    % movement
     alpha = -log(0.001);
   else
+    % Set alpha to 15, as we always do.
     alpha = 15;
   end
 end
@@ -76,7 +79,7 @@ elseif (order==2)
 end
 
 
-
+%-------------------------------------------------------------------------------
   function [ts xs xds vs vds] = testcanonicalintegrate
 
     alpha = 14;

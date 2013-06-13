@@ -22,7 +22,7 @@ for bb=1:n_basis_functions
 end
 
 
-
+%-------------------------------------------------------------------------------
   function activations  = testbasisfunctionactivations
     clf
     
@@ -53,7 +53,7 @@ end
         
       else
         
-        % Order 1/2 means a policy WITH a dynamical system
+        % Order 1 or 2 means a policy WITH a dynamical system
         % Basis functions centers are equidistantly spaced in phase space 1->0
         centers = linspace(1,0.001,n_basis_functions);
         widths = ones(size(centers))/n_basis_functions;

@@ -1,4 +1,4 @@
-function [ trajectory handles ] = transformationintegrate(y0,g,theta,xs,vs,dt,figure_handle)
+function [ trajectory handles_lines] = transformationintegrate(y0,g,theta,xs,vs,dt,figure_handle)
 % Integrate one transformation system of a Dynamic Movement Primitive
 %
 % Input:
@@ -16,6 +16,8 @@ function [ trajectory handles ] = transformationintegrate(y0,g,theta,xs,vs,dt,fi
 %                      trajectory.y   - position over time ( N x 1 ) 
 %                      trajectory.yd  - velocity over time ( N x 1 )
 %                      trajectory.ydd - acceleration over time ( N x 1 )
+%    handles_lines - handles to the line objects, so that you may change their
+%                    color and style in the script calling this function
 
 if (nargin==0)
   % If no arguments are passed, test the function
@@ -102,7 +104,7 @@ trajectory.yd = yds;
 trajectory.ydd = ydds;
 
 % Plot if necessary
-handles = [];
+handles_lines = [];
 if (figure_handle)
   figure(figure_handle)
   clf
@@ -115,17 +117,17 @@ if (figure_handle)
   [ trajectory_no_theta ] = transformationintegrate(y0,g,zeros(size(theta)),xs,vs,dt);
 
   subplot(n_rows,n_cols,1+0*n_cols);
-  handles(end+1) = plot(ts,trajectory_no_theta.ydd);
+  handles_lines(end+1) = plot(ts,trajectory_no_theta.ydd);
   axis tight; xlabel('t (s)'); ylabel('ydd')
   title('acceleration (w/o forcing term)')
 
   subplot(n_rows,n_cols,1+1*n_cols);
-  handles(end+1) = plot(ts,trajectory_no_theta.yd);
+  handles_lines(end+1) = plot(ts,trajectory_no_theta.yd);
   axis tight; xlabel('t (s)'); ylabel('yd')
   title('velocity (w/o forcing term)')
 
   subplot(n_rows,n_cols,1+2*n_cols);
-  handles(end+1) = plot(ts,trajectory_no_theta.y);
+  handles_lines(end+1) = plot(ts,trajectory_no_theta.y);
   axis tight; xlabel('t (s)'); ylabel('y')
   title('position (w/o forcing term)')
 
@@ -138,48 +140,48 @@ if (figure_handle)
   title('basis functions')
 
   subplot(n_rows,n_cols,2+1*n_cols);
-  handles(end+1) = stem(theta);
+  handles_lines(end+1) = stem(theta);
   axis tight; xlabel('b'); ylabel('$\theta_b$','Interpreter','LaTex')
   axis([0.5 n_basis_functions+0.5, min(theta) max(theta)]);
   set(gca,'XTick',1:n_basis_functions)
   title('weights (\theta)')
 
   subplot(n_rows,n_cols,2+2*n_cols);
-  handles(end+1) = plot(ts,weighted_sum_activations./sum_activations);
+  handles_lines(end+1) = plot(ts,weighted_sum_activations./sum_activations);
   axis tight; xlabel('t (s)'); ylabel('$\frac{\sum\Psi(x)\theta}{\sum\Psi(x)}$','Interpreter','LaTex')
   title('weighted basis functions')
 
   %----------------------------------------------------
   % Third row: forcing term
   subplot(n_rows,n_cols,3+0*n_cols);
-  handles(end+1) = plot(ts,vs);
+  handles_lines(end+1) = plot(ts,vs);
   axis tight; xlabel('t (s)'); ylabel('v')
   title('canonical system (v)')
 
   subplot(n_rows,n_cols,3+1*n_cols);
-  handles(end+1) = plot(ts,f);
+  handles_lines(end+1) = plot(ts,f);
   axis tight; xlabel('t (s)'); ylabel('f')
   title('nonlinear component (f)')
 
   %----------------------------------------------------
   % Fourth row: output of DMP
   subplot(n_rows,n_cols,4+0*n_cols);
-  handles(end+1) = plot(ts,ydds);
+  handles_lines(end+1) = plot(ts,ydds);
   axis tight; xlabel('t (s)'); ylabel('ydd')
   title('acceleration')
 
   subplot(n_rows,n_cols,4+1*n_cols);
-  handles(end+1) = plot(ts,yds);
+  handles_lines(end+1) = plot(ts,yds);
   axis tight; xlabel('t (s)'); ylabel('yd')
   title('velocity')
 
   subplot(n_rows,n_cols,4+2*n_cols);
-  handles(end+1) = plot(ts,ys);
+  handles_lines(end+1) = plot(ts,ys);
   axis tight; xlabel('t (s)'); ylabel('y')
   title('position')
 
-  set(handles,'LineWidth',2);
-  set(handles,'Color',[0.4 0.4 0.8]);
+  set(handles_lines,'LineWidth',2);
+  set(handles_lines,'Color',[0.4 0.4 0.8]);
   
 end
 
