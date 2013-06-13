@@ -38,10 +38,25 @@ n_basis_functions = length(theta);
 T = length(xs);
 
 %-------------------------------------------------------------------------------
-% Get basis function activations
-centers = linspace(1,0.001,n_basis_functions);
-widths = ones(size(centers))/n_basis_functions;
-activations = basisfunctionactivations(centers,widths,xs);
+% Compute basis function activations
+time_instead_of_phase=0;
+if (time_instead_of_phase)
+  % Time signal is time
+  ps = ts;
+  % Get centers and widths
+  [centers widths] = basisfunctioncenters(n_basis_functions,time);
+else
+  % Time signal is phase
+  ps = xs;
+  % Reconstruct alpha
+  alpha = -time*log(xs(2))/dt;
+  % Get centers and widths
+  [centers widths] = basisfunctioncenters(n_basis_functions,time,alpha);
+end
+
+% Compute activations
+activations = basisfunctionactivations(centers,widths,ps);
+
 
 %-------------------------------------------------------------------------------
 % Initialization

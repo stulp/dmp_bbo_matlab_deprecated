@@ -2,12 +2,12 @@ function activations = basisfunctionactivations(centers,widths,xs)
 % Compute basis activations for 1 or more time steps
 %
 % Input:
-%   centers - centers of the basis functions in phase space
-%   widths  - widths of the basis functions in phase space
+%   centers - centers of the basis functions 
+%   widths  - widths of the basis functions
 %   xs      - if scalar: current phase (or time)
 %             if vector: sequence of phases (or time)
-% Output: 
-%  activations - activations of the basis functions at each phase/time step
+% Output:
+%  activations - activations of the basis functions at each time step
 
 if (nargin==0)
   % If no arguments are passed, test the function
@@ -25,66 +25,68 @@ end
 %-------------------------------------------------------------------------------
   function activations  = testbasisfunctionactivations
     clf
-    
+
     time = 2;
     time_exec = 2.5;
-    dt = 1/25;
+    dt = 1/50;
+
+    % Get time and phase vector
+    order = 1;
+    [ts xs xds vs vds alpha] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
+    N = ceil(1+time_exec/dt); % Number of time steps
+    ts = dt*(0:N-1)';
+
     n_basis_functions = 10;
-    
-    for order = 0:2
-
-      if (order==0)
-        
-        % Order 0 means a policy without a dynamical system
-        % Basis functions centers are equidistantly spaced in time
-        widths = (0.4*time/n_basis_functions)*ones(1,n_basis_functions);
-        centers = linspace(4*widths(1),time-4*widths(1),n_basis_functions);
-        %centers = linspace(0,time,n_basis_functions);
-
-        % Time vector
-        N = ceil(1+time_exec/dt); % Number of time steps
-        ts = dt*(0:N-1)';
-        
-        % Get activations
-        activations = basisfunctionactivations(centers,widths,ts);
-        
-        % 'Fake' the canonical system (not used for order 0)
-        vs = ones(size(ts));
-        
+    for time_instead_of_phase=0:1
+      if (time_instead_of_phase)
+        ps = ts;
+        [centers widths] = basisfunctioncenters(n_basis_functions,time);
       else
-        
-        % Order 1 or 2 means a policy WITH a dynamical system
-        % Basis functions centers are equidistantly spaced in phase space 1->0
-        centers = linspace(1,0.001,n_basis_functions);
-        widths = ones(size(centers))/n_basis_functions;
-        
-        % Time and phase vector
-        [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
-        
-        % Get activations
-        activations = basisfunctionactivations(centers,widths,xs);
-        
+        ps = xs;
+        [centers widths] = basisfunctioncenters(n_basis_functions,time,alpha);
       end
 
-      % Plot basis functions
-      subplot(2,3,order+1)
+      % Get activations
+      activations = basisfunctionactivations(centers,widths,ps);
+      subplot(2,5,1+time_instead_of_phase*5)
       plot(ts,activations')
       xlabel('t (s)')
-      ylabel('activation')
+      ylabel('activations')
       axis tight
-      title(['System of order ' num2str(order)])
+      if (time_instead_of_phase)
+        title('In time space')
+      else
+        title('In phase space')
+      end
+      ylim([0 1.1])
 
-      % Plot basis functions, multiplied with canonical system
-      subplot(2,3,order+4)
-      plot(ts,repmat(vs,1,n_basis_functions).*activations)
-      hold on
-      plot(ts,vs,'-k','LineWidth',2)
-      hold off
-      xlabel('t (s)')
-      ylabel('activation * v')
-      axis tight
+      for order = 0:3
 
+        if (order==0)
+          % 'Fake' the canonical system (not used for order 0)
+          vs = ones(size(ts));
+        else
+          [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
+        end
+
+        % Plot basis functions, multiplied with canonical system
+        subplot(2,5,2+order+time_instead_of_phase*5)
+        plot(ts,repmat(vs,1,n_basis_functions).*activations)
+        hold on
+        plot(ts,vs,'-k','LineWidth',2)
+        hold off
+        xlabel('t (s)')
+        ylabel('activation * v')
+        axis tight
+        labels = {'No canonical','1st order','2nd order','sigmoid'};
+        title(labels{order+1})
+        if (order~=2)
+          ylim([0 1.1])
+        end
+
+      end
     end
   end
+
 
 end

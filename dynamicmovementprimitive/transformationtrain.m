@@ -47,10 +47,25 @@ gs  = g0+exp(-alpha_g*trajectory.t/time)*(y0-g0);
 f_target = (-alpha_z*(beta_z*(gs-trajectory.y)-trajectory.yd) + time*trajectory.ydd)/(g0-y0);
 
 %-------------------------------------------------------------------------------
-% Get basis function activations
-centers = linspace(1,0.001,n_basis_functions);
-widths = ones(size(centers))/n_basis_functions;
-activations = basisfunctionactivations(centers,widths,xs);
+% Compute basis function activations
+time_instead_of_phase=0;
+if (time_instead_of_phase)
+  % Time signal is time
+  ps = ts;
+  % Get centers and widths
+  [centers widths] = basisfunctioncenters(n_basis_functions,time);
+else
+  % Time signal is phase
+  ps = xs;
+  % Reconstruct alpha
+  dt=mean(diff(trajectory.t));
+  alpha = -time*log(xs(2))/dt;
+  % Get centers and widths
+  [centers widths] = basisfunctioncenters(n_basis_functions,time,alpha);
+end
+
+% Compute activations
+activations = basisfunctionactivations(centers,widths,ps);
 
 %-------------------------------------------------------------------------------
 % Compute the regression, using linear least squares
