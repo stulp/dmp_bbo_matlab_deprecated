@@ -3,21 +3,22 @@ function [ trajectory handles_lines] = transformationintegrate(y0,g0,theta,xs,vs
 %
 % Input:
 %   y0            - initial state (1 x 1)
-%   g0             - goal state (1 x 1)
+%   g0            - goal state (1 x 1)
 %   theta         - DMP parameters, i.e. 'weights' (1 x n_basis_functions)
 %   xs            - canonical system (time signal)
 %   vs            - canonical system (forcing term multiplier)
 %   dt            - duration of the integration step
 %   figure_handle - figure to plot on (0: no plotting)
+%
 % Output:
 %   trajectory    - the trajectory that results from integration.
 %                   this is a structure that contains
 %                      trajectory.t   - times ( N x 1 )
-%                      trajectory.y   - position over time ( N x 1 ) 
+%                      trajectory.y   - position over time ( N x 1 )
 %                      trajectory.yd  - velocity over time ( N x 1 )
 %                      trajectory.ydd - acceleration over time ( N x 1 )
-%    handles_lines - handles to the line objects, so that you may change their
-%                    color and style in the script calling this function
+%   handles_lines - handles to the line objects, so that you may change their
+%                   color and style in the script calling this function
 
 if (nargin==0)
   % If no arguments are passed, test the function
@@ -124,6 +125,8 @@ handles_lines = [];
 if (figure_handle)
   figure(figure_handle)
   clf
+  set(gcf,'Name','Transformation system integration');
+
   n_rows = 3;
   n_cols = 5;
 
@@ -133,12 +136,12 @@ if (figure_handle)
   handles_lines(end+1) = plot(ts,gds);
   axis tight; xlabel('t (s)');   ylabel('$\dot{g}$','Interpreter','LaTex')
   title('$\tau\dot{g} = \alpha_g*(g_0-g)$','Interpreter','LaTex')
-  
+
   subplot(n_rows,n_cols,1+2*n_cols);
   handles_lines(end+1) = plot(ts,gs);
   axis tight; xlabel('t (s)');   ylabel('$g$','Interpreter','LaTex')
   title('delayed goal')
-  
+
   %----------------------------------------------------
   % Second column: show spring-damper system only (i.e. without the forcing term)
   [ trajectory_no_theta ] = transformationintegrate(y0,g0,zeros(size(theta)),xs,vs,dt,time);
@@ -150,7 +153,7 @@ if (figure_handle)
 
   subplot(n_rows,n_cols,2+1*n_cols);
   handles_lines(end+1) = plot(ts,trajectory_no_theta.yd);
-  axis tight; xlabel('t (s)'); ylabel('$\ddot{y}$','Interpreter','LaTex')
+  axis tight; xlabel('t (s)'); ylabel('$\dot{y}$','Interpreter','LaTex')
   title('velocity (w/o forcing term)')
 
   subplot(n_rows,n_cols,2+2*n_cols);
@@ -158,7 +161,7 @@ if (figure_handle)
   axis tight; xlabel('t (s)'); ylabel('$y$','Interpreter','LaTex')
   title('position (w/o forcing term)')
 
-  
+
   %----------------------------------------------------
   % Third column: basis functions
   subplot(n_rows,n_cols,3+0*n_cols);
@@ -209,7 +212,7 @@ if (figure_handle)
 
   set(handles_lines,'LineWidth',2);
   set(handles_lines,'Color',[0.4 0.4 0.8]);
-  
+
   for sp=1:(n_rows*n_cols)
     if (sp==1 || sp==8 || sp==14)
     else
@@ -228,7 +231,7 @@ if (figure_handle)
     hold off
   end
 
-  
+
 end
 
 
@@ -238,7 +241,7 @@ end
     % Integrate canonical system
     dt = 1/200;
     time = 2;
-    time_exec = 1.5*time;
+    time_exec = 2*time;
     order = 3;
     [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
 
@@ -247,7 +250,7 @@ end
     y0 = 3;
     g  = 1;
     theta = 50*randn(1,n_basis_functions);
-    
+
     figure_handle = 1;
 
     trajectory = transformationintegrate(y0,g,theta,xs,vs,dt,time,figure_handle);

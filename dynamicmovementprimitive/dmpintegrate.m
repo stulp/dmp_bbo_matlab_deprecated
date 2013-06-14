@@ -10,6 +10,7 @@ function [ trajectory activations canonical_at_centers handle ] = dmpintegrate(y
 %   time_exec     - duration of the integration
 %   order         - order of the canonical system (1 or 2)
 %   figure_handle - figure to plot on (0: no plotting)
+%
 % Output:
 %   trajectory    - the trajectory that results from integration.
 %                   this is a structure that contains
@@ -89,40 +90,53 @@ for i_trans = 1:n_trans
     figure_handle_per_trans = 0;
   end
   trajectory_per_trans = transformationintegrate(y0(i_trans),g(i_trans),theta(i_trans,:),xs,vs,dt,time,figure_handle_per_trans);
- 
+
   trajectory.t = ts;
   trajectory.y(:,i_trans)   = trajectory_per_trans.y;
   trajectory.yd(:,i_trans)  = trajectory_per_trans.yd;
   trajectory.ydd(:,i_trans) = trajectory_per_trans.ydd;
-  
+
   if (figure_handle)
     set(gcf,'Name',sprintf('Transformation System %d',i_trans));
   end
 
 end
-  
+
 % Plot if necessary
 handle = [];
 if (figure_handle)
   figure(figure_handle+n_trans)
   clf
-  
-  if (n_trans>1)
-    if (n_trans>2)
-      plot3(trajectory.y(1,1,1),trajectory.y(1,2,1),trajectory.y(1,3,1),'o','MarkerFaceColor','r','MarkerEdgeColor','none');
+
+  if (n_trans>3)
+    for i_trans=1:n_trans
+      subplot(1,n_trans,i_trans)
+      plot(trajectory.t(1),trajectory.y(1,i_trans,1),'o','MarkerFaceColor','r','MarkerEdgeColor','none');
       hold on
-      plot3(trajectory.y(end,1,1),trajectory.y(end,2,1),trajectory.y(end,3,1),'o','MarkerFaceColor','g','MarkerEdgeColor','none');
-      handle = plot3(trajectory.y(:,1,1),trajectory.y(:,2,1),trajectory.y(:,3,1));
-      zlabel('y_3');
-    else
+      plot(trajectory.t(end),trajectory.y(end,i_trans,1),'o','MarkerFaceColor','g','MarkerEdgeColor','none');
+      handle(end+1) = plot(trajectory.t,trajectory.y(:,i_trans,1));
+      hold off
+      xlabel('t (s)'); ylabel('y');
+      axis equal
+      axis square
+      axis tight;
+    end
+  else
+    if (n_trans==2)
       plot(trajectory.y(1,1,1),trajectory.y(1,2,1),'o','MarkerFaceColor','r','MarkerEdgeColor','none');
       hold on
       plot(trajectory.y(end,1,1),trajectory.y(end,2,1),'o','MarkerFaceColor','g','MarkerEdgeColor','none');
       handle = plot(trajectory.y(:,1,1),trajectory.y(:,2,1));
       hold off
+      xlabel('y_1'); ylabel('y_2'); zlabel('y_3');
+    elseif (n_trans==3)
+      plot3(trajectory.y(1,1,1),trajectory.y(1,2,1),trajectory.y(1,3,1),'o','MarkerFaceColor','r','MarkerEdgeColor','none');
+      hold on
+      plot3(trajectory.y(end,1,1),trajectory.y(end,2,1),trajectory.y(end,3,1),'o','MarkerFaceColor','g','MarkerEdgeColor','none');
+      handle = plot3(trajectory.y(:,1,1),trajectory.y(:,2,1),trajectory.y(:,3,1));
+      xlabel('y_1'); ylabel('y_2'); zlabel('y_3');
     end
-    legend('y_0','g','Location','EastOutside')
-    xlabel('y_1'); ylabel('y_2')
+    legend('y_0','g_0','Location','EastOutside')
     axis equal
     axis square
     axis tight;
@@ -132,25 +146,25 @@ if (figure_handle)
   set(handle,'Color',[0.4 0.4 0.8]);
 
   set(gcf,'Name',sprintf('%dD DMP',n_trans));
-    
+
 end
 
   function [ trajectory activations canonical_at_centers handle ] = testdmpintegrate
-    
+
     % Integrate and plot a 2-D DMP with random weights
     n_basis_functions = 8;
-    y0 = [ 1.3 0.1];
-    g  = [-2.0 0.9];
+    y0 = [ 1.3 0.1 1 3];
+    g  = [-2.0 0.9 2 2];
     n_trans = length(g);
     theta = 25*randn(n_trans,n_basis_functions);
     time = 2;
     dt = 1/100;
     time_exec = 3;
     order = 3;
-    
+
     figure_handle = 1;
     [ trajectory activations canonical_at_centers handle ] = dmpintegrate(y0,g,theta,time,dt,time_exec,order,figure_handle);
-    
+
   end
 
 end

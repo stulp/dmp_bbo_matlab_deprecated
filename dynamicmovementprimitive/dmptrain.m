@@ -2,7 +2,7 @@ function [ theta y0 g ] = dmptrain(trajectory,order,n_basis_functions,figure_han
 % Train a Dynamic Movement Primitive with an observed trajectory
 %
 % Input:
-%   trajectory    - the trajectory with which to train 
+%   trajectory    - the trajectory with which to train
 %                   this is a structure that contains
 %                      trajectory.t   - times (T x 1)
 %                      trajectory.y   - position over time (T x n_trans)
@@ -11,7 +11,7 @@ function [ theta y0 g ] = dmptrain(trajectory,order,n_basis_functions,figure_han
 %   order             - order of the canonical system
 %   n_basis_functions - number of basis functions (same for each transfsys)
 %   figure_handle     - whether to plot, default = 0
-%   
+%
 % Output:
 %   theta  - DMP weight parameters (n_trans x n_basis_functions)
 %   y0     - DMP initial state (1 x n_trans)
@@ -50,14 +50,14 @@ for i_trans = 1:n_trans
   else
     figure_handle_per_dim = 0;
   end
-  
-  trajectory_per_dim.t   = trajectory.t; 
-  trajectory_per_dim.y   = trajectory.y(:,i_trans); 
-  trajectory_per_dim.yd  = trajectory.yd(:,i_trans); 
-  trajectory_per_dim.ydd = trajectory.ydd(:,i_trans); 
-  
+
+  trajectory_per_dim.t   = trajectory.t;
+  trajectory_per_dim.y   = trajectory.y(:,i_trans);
+  trajectory_per_dim.yd  = trajectory.yd(:,i_trans);
+  trajectory_per_dim.ydd = trajectory.ydd(:,i_trans);
+
   [ theta(i_trans,:) y0(i_trans) g(i_trans) ] =  transformationtrain(trajectory_per_dim,n_basis_functions,xs,vs,time,figure_handle_per_dim);
- 
+
 end
 
 if (figure_handle)
@@ -71,14 +71,14 @@ if (figure_handle)
     handle = plot3(trajectory.y(:,1,1),trajectory.y(:,2,1),trajectory.y(:,3,1));
   else
     handle = plot(trajectory.y(:,1,1),trajectory.y(:,2,1));
-  end  
+  end
   hold off
 
   % Make reproduced trajectories thin and dark
   set(handle,'LineWidth',1);
   set(handle,'Color',[0.0 0.0 0.5]);
-end  
-    
+end
+
 
 
   function [ theta y0 g0 ] = testdmptrain
@@ -86,24 +86,36 @@ end
     % Get a trajectory by integrating a DMP
     n_basis_functions = 8;
     n_trans = 2;
-    theta = 25*randn(n_trans,n_basis_functions);
+    theta_known = 25*randn(n_trans,n_basis_functions);
 
     y0 = [ 1.3 0.1];
     g  = [-2.0 0.9];
     time = 2;
-    dt = 1/100;
+    dt = 1/200;
     time_exec = time;
     order = 3;
-    
+
     % Generate a trajectory
     figure_handle = 1;
-    [ trajectory activations canonical_at_centers handle ] = dmpintegrate(y0,g,theta,time,dt,time_exec,order,figure_handle);
+    [ trajectory activations canonical_at_centers handle ] = dmpintegrate(y0,g,theta_known,time,dt,time_exec,order,figure_handle);
     % Make original trajectories thick and bright
     set(handle,'LineWidth',3);
     set(handle,'Color',[0.7 0.7 1]);
-    
+
     % Train a DMP with this trajectory
     [ theta y0 g0 ] = dmptrain(trajectory,order,n_basis_functions,figure_handle);
+
+    for ii=1:n_trans %#ok<FXUP>
+      figure(ii)
+      n_rows=3;
+      n_cols=5;
+      subplot(n_rows,n_cols,3+1*n_cols);
+      hold on
+      h = stem(theta_known(ii,:));
+      set(h,'LineWidth',1);
+      set(h,'Color',[0.0 0.0 0.5]);
+      hold off
+    end
 
   end
 

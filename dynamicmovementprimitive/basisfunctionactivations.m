@@ -2,7 +2,7 @@ function activations = basisfunctionactivations(centers,widths,xs)
 % Compute basis activations for 1 or more time steps
 %
 % Input:
-%   centers - centers of the basis functions 
+%   centers - centers of the basis functions
 %   widths  - widths of the basis functions
 %   xs      - if scalar: current phase (or time)
 %             if vector: sequence of phases (or time)
