@@ -15,11 +15,13 @@ task.cost_function= @cost_function_viapoint;
     [n_rollouts n_time_steps n_cost_vars ] = size(cost_vars); %#ok<NASGU>
     viapoint_time_step = round(task.viapoint_time_ratio*n_time_steps);
     
+    ys = zeros(n_time_steps,n_cost_vars/3);
+    ydds = zeros(n_time_steps,n_cost_vars/3);
     for k=1:n_rollouts
-      ys   = squeeze(cost_vars(k,:,1:3:end));
-      ydds = squeeze(cost_vars(k,:,3:3:end));
+      ys(:,:)   = squeeze(cost_vars(k,:,1:3:end));
+      ydds(:,:) = squeeze(cost_vars(k,:,3:3:end));
 
-      dist_to_viapoint = sqrt(sum((ys(viapoint_time_step,:)-viapoint).^2));
+      dist_to_viapoint = sqrt(sum((ys(viapoint_time_step,:)-task.viapoint).^2));
       costs(k,2) = dist_to_viapoint;
 
       % Cost due to acceleration
