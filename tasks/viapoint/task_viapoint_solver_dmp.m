@@ -13,6 +13,10 @@ end
 
 task_solver.plot_rollouts = @plot_rollouts_viapoint_solver_dmp;
 
+% This is not needed for the dmp_bbo code, it is needed for another code base.
+% Please ignore this.
+task_solver.observation_function = @observation_function_viapoint_solver_dmp;
+
 % Initial and goal state
 task_solver.y0 = y0;
 task_solver.g  = g;
@@ -30,9 +34,9 @@ task_solver.theta_init = zeros(2,2);
 
 addpath dynamicmovementprimitive/
 
-  function plot_rollouts_viapoint_solver_dmp(axes_handle,task,cost_vars)
-    cla(axes_handle)
-    
+  function plot_rollouts_viapoint_solver_dmp(axes_handle,task,cost_vars) %#ok<INUSL>
+    %cla(axes_handle)
+
     x = squeeze(cost_vars(:,:,1));
     y = squeeze(cost_vars(:,:,4));
     n_time_steps = task_solver.timesteps;
@@ -53,7 +57,7 @@ addpath dynamicmovementprimitive/
     plot([ x(1,viapoint_time_step) task.viapoint(1)] ,[y(1,viapoint_time_step) task.viapoint(2)],'Color',color,'LineWidth',linewidth)
 
     plot(task.viapoint(1),task.viapoint(2),'og')
-    
+
     xlabel('x_1 (DMP output dim=1)')
     ylabel('x_2 (DMP output dim=2)')
     hold off
@@ -63,29 +67,29 @@ addpath dynamicmovementprimitive/
 
 % Now comes the function that does the roll-out and visualization thereof
   function cost_vars = perform_rollouts_viapoint_solver_dmp(task,thetas) %#ok<INUSL>
-    
+
     n_samples = size(thetas,2);
     n_dims = length(task_solver.g);
     n_time_steps = task_solver.timesteps;
 
     cost_vars = zeros(n_samples,n_time_steps,3*n_dims); % Compute n_timesteps and n_dims in constructor
-    
+
     for k=1:n_samples
       theta = squeeze(thetas(:,k,:));
-    
+
       trajectory = dmpintegrate(task_solver.y0,task_solver.g,theta,task_solver.time,task_solver.dt,task_solver.time_exec);
-      
+
       cost_vars(k,:,1:3:end) = trajectory.y;
       cost_vars(k,:,2:3:end) = trajectory.yd;
       cost_vars(k,:,3:3:end) = trajectory.ydd;
-    
+
     end
-    
+
   end
 
 % Now comes the function that does the roll-out and visualization thereof
   function cost_vars = perform_rollouts_viapoint_solver_dmp_external(task,thetas)
-    
+
     n_samples = size(thetas,2);
     for k=1:n_samples
       theta = squeeze(thetas(:,k,:));
@@ -103,7 +107,7 @@ addpath dynamicmovementprimitive/
     command = ['./tasks/viapoint/task_viapoint_external_cpp/task_viapoint_external_cpp ' pwd '/' directory];
     fprintf('External program running... ');
     system(command);
-    
+
     % Wait for the file. A crude but simple way for communication.
     while (~exist(done_filename,'file'))
       pause(0.1)
@@ -115,6 +119,42 @@ addpath dynamicmovementprimitive/
 
   end
 
+
+  function observation = observation_function_viapoint_solver_dmp(task,N,min_values,max_values,figure_handle) %#ok<DEFNU>
+    n_dim = length(task.viapoint);
+    if (n_dim~=2)
+      error('Sorry. observation_function_viapoint only works for n_dim==2 (but it is %d)',n_dim)
+    end
+    if (nargin<2), N = 20; end
+    if (nargin<3), min_values = zeros(1,n_dim); end
+    if (nargin<4), max_values = ones(1,n_dim); end
+    if (nargin<5), figure_handle = 0; end
+
+    % Scale viapoint in normalized space [0-1]
+    scaled_viapoint = (task.viapoint-min_values)./(max_values-min_values);
+    % Generate X/Y grid in normalized space
+    [X Y] = meshgrid(linspace(0,1,N),linspace(0,1,N));
+    % Get value in multi-variate normal distribution
+    Z = mvnpdf([ X(:) Y(:)],scaled_viapoint,0.005*eye(n_dim));
+    % Make an NxN image of this.
+    image = reshape(Z,N,N);
+
+    max_image = max(max(image));
+    image(image<0.01*max_image) = 0;
+    image = image + 2*randn(size(image));
+
+    if (figure_handle)
+      figure(figure_handle)
+      mesh(image)
+      axis square
+      axis tight
+      colormap(gray)
+    end
+
+    observation = image(:);
+
+
+  end
 
 end
 
