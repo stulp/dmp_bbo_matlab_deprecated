@@ -30,55 +30,59 @@ task_solver.n_time_steps = ceil(1+task_solver.time/task_solver.dt); % Number of 
 task_solver.n_time_steps_exec = ceil(1+task_solver.time_exec/task_solver.dt); % Number of time steps
 
 task_solver.order=2; % Order of the dynamic movement primitive
-% Next values optimized for minimizing acceleration in separate learning session
-%task.theta_init = [37.0458   -4.2715   27.0579   13.6385; 37.0458   -4.2715   27.0579   13.6385];
 task_solver.theta_init = zeros(task_solver.n_dim,2);
 
 addpath dynamicmovementprimitive/
 
-  function plot_rollouts_viapoint_solver_dmp(axes_handle,task,cost_vars) %#ok<INUSL>
+  function line_handles = plot_rollouts_viapoint_solver_dmp(axes_handle,task,cost_vars) %#ok<INUSL>
     %cla(axes_handle)
     
     [ n_rollouts n_time_steps n_cost_vars ] = size(cost_vars);
     viapoint_time_step = round(task.viapoint_time_ratio*n_time_steps);
 
     if (task_solver.n_dim==1)
-      y = squeeze(cost_vars(:,:,1));
       x = repmat(1:n_time_steps,n_rollouts,1);
+      y = squeeze(cost_vars(:,:,1));
+      x_via = viapoint_time_step;
+      y_via = task.viapoint(1);
+      
     elseif (task_solver.n_dim==2)
       x = squeeze(cost_vars(:,:,1));
       y = squeeze(cost_vars(:,:,4));
+      x_via = task.viapoint(1);
+      y_via = task.viapoint(2);
+      
     else
       warning('Only know how to plot rollouts for viapoint task when n_dim<3, but n_dim==%d',task_solver.n_dim); %#ok<WNTAG>
       return;
     end
     
     color = 0.8*ones(1,3);
-    if (n_rollouts>2)
-      linewidth = 1;
-      plot(x(2:end,viapoint_time_step),y(2:end,viapoint_time_step),'o','Color',color,'LineWidth',linewidth)
-      hold on
-      plot(x(2:end,:)',y(2:end,:)','Color',color,'LineWidth',linewidth)
-      %my_ones = ones(size(x(2:end,viapoint_time_step)));
-      %plot([ x(2:end,viapoint_time_step) task.viapoint(1)*my_ones]' ,[y(2:end,viapoint_time_step) task.viapoint(2)*my_ones]','Color',color,'LineWidth',linewidth)
-    end
-
-    linewidth = 2;
-    color = 0.5*color;
-    plot(x(1,viapoint_time_step),y(1,viapoint_time_step),'o','Color',color,'LineWidth',linewidth)
+    linewidth = 1;
+    
+    % Draw trajectory
+    line_handles(1,:) =  plot(x',y','Color',color,'LineWidth',linewidth);
     hold on
-    plot(x(1,:)',y(1,:)','Color',color,'LineWidth',linewidth)
+    % Draw line from trajectory to viapoint
+    if (task_solver.n_dim==2)
+      my_ones = ones(size(x(:,viapoint_time_step)));
+      line_handles(2,:) = plot([ x(:,viapoint_time_step) x_via*my_ones]' ,[y(:,viapoint_time_step) y_via*my_ones]','Color',color,'LineWidth',linewidth);
+    end
+    % Highlight position along trajectory at viapoint_time_step
+    %line_handles(3,:) =  plot(x(:,viapoint_time_step),y(:,viapoint_time_step),'o','Color',color,'LineWidth',linewidth);
+    
+    % Plot viapoint
+    plot(x_via,y_via,'o','MarkerFaceColor',[0.6 0.9 0.6],'MarkerSize',8,'MarkerEdgeColor',0.5*[1 1 1]);
+    hold off
+    
+    axis square
+    axis tight
+    
     if (task_solver.n_dim==1)
-      plot(viapoint_time_step,task.viapoint(1),'og')
-      axis square
-      axis tight
       ylim([-0.1 1.1])
     else
-      plot([ x(1,viapoint_time_step) task.viapoint(1)] ,[y(1,viapoint_time_step) task.viapoint(2)],'Color',color,'LineWidth',linewidth)
-      plot(task.viapoint(1),task.viapoint(2),'og')
       axis([-0.1 1.1 -0.1 1.1])
     end 
-    hold off
   end
 
 % Now comes the function that does the roll-out and visualization thereof
@@ -95,7 +99,7 @@ addpath dynamicmovementprimitive/
 
       theta(:,:) = squeeze(thetas(:,k,:));
       
-      trajectory = dmpintegrate(task_solver.y0,task_solver.g,theta,task_solver.time,task_solver.dt,task_solver.time_exec);
+      trajectory = dmpintegrate(task_solver.y0,task_solver.g,theta,task_solver.time,task_solver.dt,task_solver.time_exec,task_solver.order);
 
       cost_vars(k,:,1:3:end) = trajectory.y;
       cost_vars(k,:,2:3:end) = trajectory.yd;

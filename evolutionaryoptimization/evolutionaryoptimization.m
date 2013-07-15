@@ -97,7 +97,12 @@ while (i_update<=n_updates)
     % Plot rollouts if the plot_rollouts function is available
     if (isfield(task_solver,'plot_rollouts'))
       subplot(plot_n_dofs,4,1:4:plot_n_dofs*4)
-      task_solver.plot_rollouts(gca,task,cost_vars)
+      handles = task_solver.plot_rollouts(gca,task,cost_vars);
+      if (first_is_mean)
+        uistack(handles(:,1),'top');
+        set(handles(:,1),'LineWidth',2)
+        set(handles(:,1),'Color',0.5*[1 1 1])
+      end
       title('Visualization of roll-outs')
     end
     
