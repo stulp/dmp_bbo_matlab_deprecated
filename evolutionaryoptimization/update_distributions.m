@@ -50,9 +50,12 @@ end
 n_samples = size(samples,2);
 
 
-% First column contains total costs
-total_costs = costs(:,1);
-
+if (isvector(costs))
+  total_costs = costs(:);
+else
+  % First column contains total costs
+  total_costs = costs(:,1);
+end
 
 %-------------------------------------------------------------------------------
 % First, map the costs to the weights
