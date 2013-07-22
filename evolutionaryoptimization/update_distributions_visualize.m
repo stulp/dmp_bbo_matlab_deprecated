@@ -1,6 +1,7 @@
-function subplot_handles = update_distributions_visualize(update_summary,highlight,plot_samples,i_dofs)
+function subplot_handles = update_distributions_visualize(update_summary,highlight,plot_samples,i_dofs,main_color)
 if (nargin<2), highlight=0; end
 if (nargin<3), plot_samples=0; end
+if (nargin<5), main_color=0.8*ones(1,3); end
 
 n_dofs = length(update_summary.distributions);
 n_dims  = length(update_summary.distributions(1).mean);
@@ -53,13 +54,13 @@ for i_dof=i_dofs
   end
   
   if (plot_n_dim==2)
-    h_before_theta = plot(theta(1),    theta(2)    ,'o','MarkerSize',10,'MarkerEdgeColor','none');
+    h_before_theta = plot(theta(1),    theta(2)    ,'o','MarkerSize',8,'MarkerEdgeColor','none');
     hold on
-    h_after_theta  = plot(theta_new(1),theta_new(2),'o','MarkerSize',10,'MarkerEdgeColor','none');
+    h_after_theta  = plot(theta_new(1),theta_new(2),'o','MarkerSize',8,'MarkerEdgeColor','none');
   elseif (plot_n_dim==3)
-    h_before_theta = plot3(theta(1),    theta(2)    ,    theta(3),'o','MarkerSize',10,'MarkerEdgeColor','none');
+    h_before_theta = plot3(theta(1),    theta(2)    ,    theta(3),'o','MarkerSize',8,'MarkerEdgeColor','none');
     hold on
-    h_after_theta  = plot3(theta_new(1),theta_new(2),theta_new(3),'o','MarkerSize',10,'MarkerEdgeColor','none');
+    h_after_theta  = plot3(theta_new(1),theta_new(2),theta_new(3),'o','MarkerSize',8,'MarkerEdgeColor','none');
   end
     
   % Note that plotting this might lead to numerical issues because we are
@@ -77,8 +78,8 @@ for i_dof=i_dofs
     end
   else
     if (plot_n_dim<3)
-      set([h_before_covar h_after_covar],'Color',0.8*ones(1,3),'LineWidth',1);
-      set(h_before_theta ,'MarkerFaceColor',0.8*ones(1,3),'MarkerEdgeColor','none');
+      set([h_before_covar h_after_covar],'Color',main_color,'LineWidth',1);
+      set(h_before_theta ,'MarkerFaceColor',main_color,'MarkerEdgeColor','none');
     end
   end
 end

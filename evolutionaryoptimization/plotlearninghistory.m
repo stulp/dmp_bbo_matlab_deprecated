@@ -6,7 +6,7 @@ function plotlearninghistory(learning_history,highlight,main_color)
 
 if (nargin==0), testplotlearninghistory; return; end
 if (nargin<2), highlight=0; end
-if (nargin<3), main_color=[0 0 1.0]; end
+if (nargin<3), main_color=0.8*ones(1,3); end
 
 
 n_dofs = length(learning_history(1).distributions_new);
@@ -50,7 +50,7 @@ for i_dof=1:plot_n_dofs %#ok<FXUP>
     plot_samples = (hh==length(learning_history));
     summary = learning_history(hh);
     if (n_dims<3)
-      update_distributions_visualize(summary,highlight,plot_samples,i_dof)
+      update_distributions_visualize(summary,highlight,plot_samples,i_dof,main_color)
     end
 
     axis square
@@ -109,6 +109,7 @@ for i_dof=1:plot_n_dofs %#ok<FXUP>
     axis tight
     axis square
     ylim([0 max(exploration_curve)])
+    x_ticks_exploration = get(gca,'XTick');
     if (annotate_plots)
       title('Exploration magnitude over time')
       xlabel('number of updates')
@@ -135,21 +136,28 @@ for hh=1:length(learning_history)
   n_rollouts_per_update(hh) = size(learning_history(hh).costs,1);
   %std_costs_exploration(hh,:) = sqrt(var(learning_history(hh).costs));
 end
-evaluation_rollouts = cumsum([1 n_rollouts_per_update(1:end-1)]);
 
 subplot(plot_n_dofs,4,4:4:plot_n_dofs*4)
 plot(all_costs(:,1),'.','Color',0.8*ones(1,3))
 hold on
-first_is_mean=1;
+first_is_mean=0;
 if (first_is_mean)
+  evaluation_rollouts = cumsum([1 n_rollouts_per_update(1:end-1)]);
   plot(evaluation_rollouts,all_costs(evaluation_rollouts,:),'-','LineWidth',1)
   plot(evaluation_rollouts,all_costs(evaluation_rollouts,1),'-','LineWidth',2,'Color',main_color)
+  if (length(x_ticks_exploration)<=length(evaluation_rollouts))
+    set(gca,'XTick',evaluation_rollouts(x_ticks_exploration));
+    set(gca,'XTickLabel',x_ticks_exploration);
+  end
 else
+  evaluation_rollouts = cumsum(n_rollouts_per_update(1:end));
   plot(evaluation_rollouts,costs_mean,'-','LineWidth',1)
   plot(evaluation_rollouts,costs_mean(:,1),'-','LineWidth',2,'Color',main_color)
+  if (length(x_ticks_exploration)<=length(evaluation_rollouts))
+    set(gca,'XTick',evaluation_rollouts(x_ticks_exploration));
+    set(gca,'XTickLabel',x_ticks_exploration);
+  end
 end
-set(gca,'XTick',evaluation_rollouts);
-set(gca,'XTickLabel',1:length(evaluation_rollouts));
 
 hold off
 axis square
