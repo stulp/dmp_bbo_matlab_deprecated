@@ -6,8 +6,7 @@ function plotlearninghistory(learning_history,highlight,main_color)
 
 if (nargin==0), testplotlearninghistory; return; end
 if (nargin<2), highlight=0; end
-if (nargin<3), main_color=0.8*ones(1,3); end
-
+if (nargin<3), main_color=[0 0 0.8]; end
 
 n_dofs = length(learning_history(1).distributions_new);
 n_dims = length(learning_history(1).distributions_new(1).mean);
@@ -43,14 +42,26 @@ for i_dof=1:plot_n_dofs %#ok<FXUP>
     cla
   end
   
-  % Plot only most recent 10 history entries
-  for hh=[ 1 max(1,length(learning_history)-10):length(learning_history) ]
-
-    highlight = (hh==length(learning_history));
-    plot_samples = (hh==length(learning_history));
-    summary = learning_history(hh);
+  % Plot only most recent history entries
+  n_most_recent_summaries = 10;
+  
+  from_summary = max(1,length(learning_history)-n_most_recent_summaries+1);
+  colors = [linspace(0.95,main_color(1),n_most_recent_summaries)'...
+            linspace(0.95,main_color(2),n_most_recent_summaries)'...
+            linspace(0.95,main_color(3),n_most_recent_summaries)'...
+            ];
+          
+  n_summaries = min(length(learning_history),n_most_recent_summaries);
+  for hh=1:n_summaries
+    %disp([ hh  length(learning_history)-n_summaries+hh ]);
+    
+    highlight = (hh==n_summaries);
+    plot_samples = (hh==n_summaries);
+    i_color  = hh+(n_most_recent_summaries-n_summaries);
+    color = colors(i_color,:);
+    summary = learning_history(end-n_summaries+hh);
     if (n_dims<3)
-      update_distributions_visualize(summary,highlight,plot_samples,i_dof,main_color)
+      update_distributions_visualize(summary,highlight,plot_samples,i_dof,color)
     end
 
     axis square
