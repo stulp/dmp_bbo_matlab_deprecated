@@ -1,4 +1,5 @@
 %--------------- Startup ---------------
+disp('startup dmp_bbo')
 addpath(genpath('dynamicmovementprimitive'))
 addpath(genpath('evolutionaryoptimization'))
 addpath(genpath('fileio'))
