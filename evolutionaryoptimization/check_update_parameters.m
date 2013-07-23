@@ -7,6 +7,7 @@ if (nargin==0)
   update_parameters.covar_learning_rate =       1; % No lowpass filter
   update_parameters.covar_bounds        =   [0.1]; %#ok<NBRAK> % Lower relative bound
   update_parameters.covar_scales        =       1; % No scaling
+  update_parameters.first_is_mean       =       1; % The first sample is the mean
 end
 
 % Do some checks here
@@ -25,6 +26,10 @@ end
 
 if (~isfield(update_parameters,'covar_scales'))
   update_parameters.covar_scales        =       1; % No scaling
+end
+
+if (~isfield(update_parameters,'first_is_mean'))
+  update_parameters.first_is_mean        =       1; % The first sample is the mean
 end
 
 

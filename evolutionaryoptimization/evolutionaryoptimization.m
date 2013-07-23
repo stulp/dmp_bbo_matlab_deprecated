@@ -40,6 +40,9 @@ update_parameters     = check_update_parameters(update_parameters);
 
 % Should the first sample be the mean?
 first_is_mean = 1;
+if (isfield(update_parameters,'first_is_mean'))
+  first_is_mean = update_parameters.first_is_mean;
+end
 
 [ n_dofs n_dims ] = size(theta_init); %#ok<NASGU>
 if (ndims(covar_init)==2)
@@ -98,7 +101,7 @@ while (i_update<=n_updates)
     if (isfield(task_solver,'plot_rollouts'))
       subplot(plot_n_dofs,4,1:4:plot_n_dofs*4)
       handles = task_solver.plot_rollouts(gca,task,cost_vars);
-      if (first_is_mean)
+      if (first_is_mean && ~isempty(handles))
         uistack(handles(:,1),'top');
         set(handles(:,1),'LineWidth',2)
         set(handles(:,1),'Color',0.5*[1 1 1])
