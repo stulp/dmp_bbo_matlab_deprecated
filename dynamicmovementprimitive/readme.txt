@@ -1,16 +1,12 @@
 Implementation of discrete Dynamic Movement Primitives
 
-Calling functions without any arguments tests them and plots some things. 
+Ijspeert, A.;Nakanishi, J.; Pastor, P; Hoffmann, H.; Schaal, S. (2013). Dynamical Movement
+Primitives: Learning Attractor Models forMotor Behaviors, Neural Computation, 25, pp.328–373. 
 
-To integrate, there are two options:
+This is a simple implementation optimized for legibility, not functionality. It uses analytical
+integration as much as possible. Therefore, the DMP is not able to react to perturbations or
+changing goals, and the phase cannot be held.
 
-1) Integrate the system in one go. This is implemented by for instance "canonicalintegrate.m"
-
-2) Integrate the system step-by-step. This is implemented by for instance "canonicalintegratestep.m", and "canonicalreset.m"
-
-On robots, you will typically want to do 2), because 1) does not allow for feedback, i.e. you are integrating the system before executing it on the robot.
-In simple Matlab simulations (where no perturbations arise), it is quicker to integrate the system in one go.
-
-TODO: Implement "dmpintegratestep.m", and "dmpreset.m" (i.e. option 2) for DMPs)
-
+See the help of the functions, and call them without arguments to run a test function that provides
+a visualization.
 

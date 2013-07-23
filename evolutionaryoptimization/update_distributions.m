@@ -50,9 +50,12 @@ end
 n_samples = size(samples,2);
 
 
-% First column contains total costs
-total_costs = costs(:,1);
-
+if (isvector(costs))
+  total_costs = costs(:);
+else
+  % First column contains total costs
+  total_costs = costs(:,1);
+end
 
 %-------------------------------------------------------------------------------
 % First, map the costs to the weights
@@ -82,9 +85,16 @@ else
   return;
 end
 
+% Relative standard deviation of total costs
+rel_std = std(total_costs)/mean(total_costs);
+if (rel_std<1e-10)
+  % Special case: all costs are the same
+  % Set same weights for all.
+  weights = ones(size(weights));
+end
+
 % Normalize weights
 weights = weights/sum(weights);
-
 
 %-------------------------------------------------------------------------------
 % Second, compute new mean

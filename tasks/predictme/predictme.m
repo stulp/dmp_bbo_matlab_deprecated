@@ -39,6 +39,7 @@ for switch_g = 0:1
     %update_parameters.covar_full          =       0; % 0 -> diag, 1 -> full
     %update_parameters.covar_learning_rate =     0.8; % No lowpass filter
     update_parameters.covar_bounds        =   [0.1]; %#ok<NBRAK>
+    update_parameters.first_is_mean       =       1;
 
     clf
     [theta_opt learning_history] = evolutionaryoptimization(task,task_solver,task_solver.theta_init,covar_init,n_updates,n_samples,update_parameters);
