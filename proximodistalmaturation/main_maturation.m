@@ -17,6 +17,21 @@ for arm_type=1:n_arm_types
 end
 arm_labels = {'Human','Equidistant','Inverted Human'};
 
+% Points to reach to for sensitivity analysis (and optimization too)
+viapoint_xs =  0.0:0.2:1.0;
+viapoint_ys =  0.2:0.2:1.0;
+n_viapoints = 0;
+clear viapoints;
+for viapoint_x=viapoint_xs
+  for viapoint_y=viapoint_ys
+    viapoint = [viapoint_x viapoint_y]';
+    dist_to_shoulder =  sqrt(sum((viapoint).^2));
+    if (dist_to_shoulder<=arm_length)
+      n_viapoints = n_viapoints + 1;
+      viapoints(n_viapoints,:) = viapoint;
+    end
+  end
+end
 
 %-------------------------------------------------------------------------------
 fprintf('___________________________________________________________________\n')
@@ -56,22 +71,6 @@ end
 %-------------------------------------------------------------------------------
 fprintf('___________________________________________________________________\n')
 fprintf('SENSITIVITY ANALYSIS\n')
-
-% Points to reach to for sensitivity analysis (and optimization too)
-viapoint_xs =  0.0:0.2:1.0;
-viapoint_ys =  0.2:0.2:1.0;
-n_viapoints = 0;
-clear viapoints;
-for viapoint_x=viapoint_xs
-  for viapoint_y=viapoint_ys
-    viapoint = [viapoint_x viapoint_y]';
-    dist_to_shoulder =  sqrt(sum((viapoint).^2));
-    if (dist_to_shoulder<=arm_length)
-      n_viapoints = n_viapoints + 1;
-      viapoints(n_viapoints,:) = viapoint;
-    end
-  end
-end
 
 perturbation_magnitude = 0.1;
 
