@@ -42,7 +42,7 @@ task_solver.theta_init = repmat([37.0458   -4.2715   27.0579   13.6385],n_dims,[
 
 addpath dynamicmovementprimitive/
 
-  function plot_rollouts_multidofviapoint_solver_dmp(axes_handle,task,cost_vars)
+  function handles = plot_rollouts_multidofviapoint_solver_dmp(axes_handle,task,cost_vars)
     cla(axes_handle)
     
     x = squeeze(cost_vars(:,:,1));
@@ -68,6 +68,7 @@ addpath dynamicmovementprimitive/
     end
     hold off
     axis equal
+    handles = [];
   end
     
 % Now comes the function that does the roll-out and visualization thereof

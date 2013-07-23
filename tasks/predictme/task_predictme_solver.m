@@ -43,7 +43,7 @@ addpath dynamicmovementprimitive/
     
   end
 
-  function handle = plot_rollouts_predictme_solver(axes_handle,task,cost_vars)
+  function handles = plot_rollouts_predictme_solver(axes_handle,task,cost_vars)
     cla(axes_handle)
     
     x = squeeze(cost_vars(:,:,1));
@@ -51,16 +51,13 @@ addpath dynamicmovementprimitive/
 
     linewidth = 1;
     color = 0.8*ones(1,3);
+    handles = plot(x',y','-','Color',color,'LineWidth',linewidth)';
+    hold on
+    
     if (size(x,1)==3)
       patch([x(2,:) x(end,end:-1:1)]',[y(2,:) y(end,end:-1:1)]',color,'EdgeColor','none')
-    else
-      plot(x(2:end,:)',y(2:end,:)','Color',color,'LineWidth',linewidth)
     end
-    hold on
 
-    linewidth = 2;
-    color = 0.5*color;
-    handle = plot(x(1,:)',y(1,:)','Color',color,'LineWidth',linewidth);
 
     plot(task.g(1),task.g(2),'*g');
     plot(task.g_distract(1),task.g_distract(2),'*r');
