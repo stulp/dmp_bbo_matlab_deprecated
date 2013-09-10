@@ -65,7 +65,7 @@ addpath dynamicmovementprimitive/
     hold off
     
     axis equal
-    axis([-0.25 1.25 -1.25 0.25])
+    axis([-0.75 1.25 -1.25 0.25])
   end
 
 end

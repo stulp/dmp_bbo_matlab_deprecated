@@ -18,7 +18,7 @@ for switch_g = 0:1
   clear learning_histories
   figure(1)
   for i_learning_session=1:n_learning_sessions
-    fprintf('Learning session %d%d',i_learning_session,n_learning_sessions)
+    fprintf('Learning session %d/%d\n',i_learning_session,n_learning_sessions)
 
     % This is the task solver
     task_solver = task_predictme_solver(g,y0);
