@@ -22,7 +22,7 @@ ts = 0:task_solver.dt:task_solver.time_exec;
 %n_timesteps = length(ts);
 task_solver.activations = basisfunctionactivations(centers,widths,ts);
 
-  function plot_rollouts_maturation_solver(axes_handle,task,cost_vars)
+  function handles = plot_rollouts_maturation_solver(axes_handle,task,cost_vars)
     cla(axes_handle)
 
     n_time_steps = task_solver.timesteps;
@@ -40,6 +40,7 @@ task_solver.activations = basisfunctionactivations(centers,widths,ts);
     axis([-0.3 1.1 -0.3 1.1]);
     axis equal
     drawnow
+    handles = [];
   end
     
 

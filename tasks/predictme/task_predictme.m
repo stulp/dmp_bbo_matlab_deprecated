@@ -11,6 +11,7 @@ task.g_distract = g_distract;
 
 task.cost_function= @cost_function_predictme;
 
+task.legibility = 1.5;
 
   function costs = cost_function_predictme(task,cost_vars)
 
@@ -79,7 +80,7 @@ task.cost_function= @cost_function_predictme;
         % The intersection point and distance define the mean and std of a Gaussian
         % along y=0
         prediction_mean = intersection(1);
-        some_scaling_factor = 0.01;
+        some_scaling_factor = 0.01*task.legibility;
         prediction_sigma = some_scaling_factor*ticks_for_dist;
         % Value of cumululative normal distribution at x_between
         cdf_val = cdf('Normal',x_between,prediction_mean,prediction_sigma);

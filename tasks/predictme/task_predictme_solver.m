@@ -14,9 +14,10 @@ task_solver.dt = 1/50;
 task_solver.time_exec = 1.5;
 task_solver.timesteps = ceil(1+task_solver.time_exec/task_solver.dt); % Number of time steps
 
-task_solver.order=2; % Order of the dynamic movement primitive
+task_solver.order=3; % Order of the dynamic movement primitive
 % Next values optimized for minimizing acceleration in separate learning session
 task_solver.theta_init = [37.0458   -4.2715   27.0579   13.6385; 37.0458   -4.2715   27.0579   13.6385];
+task_solver.theta_init = 0*[37.0458   -4.2715   27.0579   13.6385; 37.0458   -4.2715   27.0579   13.6385];
 
 addpath dynamicmovementprimitive/
 
@@ -32,7 +33,7 @@ addpath dynamicmovementprimitive/
     for k=1:n_samples
       theta = squeeze(thetas(:,k,:));
     
-      trajectory = dmpintegrate(task_solver.y0,task_solver.g,theta,task_solver.time,task_solver.dt,task_solver.time_exec);
+      trajectory = dmpintegrate(task_solver.y0,task_solver.g,theta,task_solver.time,task_solver.dt,task_solver.time_exec,task_solver.order);
       
       cost_vars(k,:,1:3:end) = trajectory.y;
       cost_vars(k,:,2:3:end) = trajectory.yd;
@@ -42,7 +43,7 @@ addpath dynamicmovementprimitive/
     
   end
 
-  function handle = plot_rollouts_predictme_solver(axes_handle,task,cost_vars)
+  function handles = plot_rollouts_predictme_solver(axes_handle,task,cost_vars)
     cla(axes_handle)
     
     x = squeeze(cost_vars(:,:,1));
@@ -50,17 +51,21 @@ addpath dynamicmovementprimitive/
 
     linewidth = 1;
     color = 0.8*ones(1,3);
-    plot(x(2:end,:)',y(2:end,:)','Color',color,'LineWidth',linewidth)
+    handles = plot(x',y','-','Color',color,'LineWidth',linewidth)';
     hold on
+    
+    if (size(x,1)==3)
+      patch([x(2,:) x(end,end:-1:1)]',[y(2,:) y(end,end:-1:1)]',color,'EdgeColor','none')
+    end
 
-    linewidth = 2;
-    color = 0.5*color;
-    handle = plot(x(1,:)',y(1,:)','Color',color,'LineWidth',linewidth);
 
     plot(task.g(1),task.g(2),'*g');
     plot(task.g_distract(1),task.g_distract(2),'*r');
 
     hold off
+    
+    axis equal
+    axis([-0.25 1.25 -1.25 0.25])
   end
 
 end
