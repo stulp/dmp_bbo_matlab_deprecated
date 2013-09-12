@@ -7,10 +7,10 @@ if (nargin<1)
   link_lengths_per_arm(1,:) = getlinklengths(arm_type,n_dofs,arm_length);
 end
 if (nargin<2)
-  viapoints = [0 0.5];
+  viapoints = [0 0.8];
 end
 if (nargin<3), n_experiments_per_task = 1; end
-if (nargin<4), n_updates = 20; end
+if (nargin<4), n_updates = 50; end
 
 % Optimization parameters
 K = 20;
