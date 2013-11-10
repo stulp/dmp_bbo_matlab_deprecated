@@ -1,11 +1,16 @@
-NOTE: I am currently working on an object-oriented version of this code in both Matlab and C++. This should come 
-on-line on GitHub early 2014. This new code will have a lot more features, and has already been tested much more 
-extensively than this "dmp_bbo" code. So if you intend to use code like the one you can find here, I suggest you 
-wait a few weeks more and use the new and improved version (send me an e-mail - you'll find me if you search for 
-Freek Stulp -- if you want to have details on the status, or be a beta-tester for the upcoming code).
+NOTE: I am currently working on an object-oriented version of this 
+code in both Matlab and C++. This should come on-line on GitHub 
+early 2014. This new code will have a lot more features, and has 
+already been tested much more extensively than this "dmp_bbo" code. 
+So if you intend to use code like the one you can find here, I 
+suggest you wait a few weeks more and use the new and improved 
+version (send me an e-mail - you'll find me if you search for Freek 
+Stulp -- if you want to have details on the status, or be a 
+beta-tester for the upcoming code).
 
-Since this "dmp_bbo" code is not maintained or supported anymore, I'll take it off-line shortly after the new 
-release. Just so you know.
+Since this "dmp_bbo" code is not maintained or supported anymore, 
+I'll take it off-line shortly after the new release. Just so you 
+know.
  
 ________________________________________________________________________________
 WHAT THIS CODE IS FOR
