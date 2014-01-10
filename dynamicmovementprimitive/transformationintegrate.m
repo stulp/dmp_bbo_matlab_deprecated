@@ -59,10 +59,11 @@ n_basis_functions = length(theta);
 %-------------------------------------------------------------------------------
 % Duration of the motion in time steps
 T = length(xs);
+ts = dt*(0:T-1)'; % time over time
 
 %-------------------------------------------------------------------------------
 % Compute basis function activations
-time_instead_of_phase=0;
+time_instead_of_phase=1;
 if (time_instead_of_phase)
   % Time signal is time
   ps = ts;
@@ -79,7 +80,6 @@ end
 
 % Compute activations
 activations = basisfunctionactivations(centers,widths,ps);
-
 
 %-------------------------------------------------------------------------------
 % Initialization
@@ -136,7 +136,6 @@ for tt=2:T
 
 end
 
-ts = dt*(0:T-1)'; % time over time
 trajectory.t = ts;
 trajectory.y = ys;
 trajectory.yd = yds;
