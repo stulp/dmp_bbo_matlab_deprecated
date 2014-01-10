@@ -22,7 +22,7 @@
 
 function [task_solver] = task_petanque_solver_master(g,y0)
                        % R_SFE R_SAA  R_HR  R_EB  R_WR R_WFE R_WAA 
-if (nargin<1), g    = [ -0.40 -0.30  0.00  0.70  0.00  0.00  0.00  ]+0.01; end
+if (nargin<1), g    = [ -0.40 -0.30  0.00  0.70  0.00  0.00  0.00  ]+0.1; end
 if (nargin<2), y0   = [  0.70 -0.30  0.00  2.00  0.00  0.00  0.00 ]; end
 
 task_solver.name = 'petanque_master';
@@ -56,7 +56,7 @@ task_solver.scales = (task_solver.scales+0.01)/(1+0.01);
 addpath dynamicmovementprimitive/
 
   function [handles] = plot_rollouts_petanque_solver_master(axes_handle,task,all_cost_vars)
-    cla(axes_handle)
+    %cla(axes_handle)
 
     n_samples = size(all_cost_vars,1);
     for k=1:n_samples
@@ -76,7 +76,8 @@ addpath dynamicmovementprimitive/
     hold off
     axis equal
     axis tight
-    zlim([-1.0 1.0])
+    %zlim([-1.0 1.0])
+    axis([-0.5 0.5 -0.1 1.5 -1.0 0.5])
     drawnow
   end
 
@@ -101,7 +102,9 @@ addpath dynamicmovementprimitive/
     end
 
     % zzz Provide functionality for writing misc else to file
-    filename = sprintf('%s/goal.txt',directory);
+    current_update = read_current_update(directory);
+    output_directory = sprintf('%s/%03d_update/rollouts',directory,current_update);
+    filename = sprintf('%s/goal.txt',output_directory);
     dlmwrite(filename,task.goal_ball,' ');
     
     % Run external program here
