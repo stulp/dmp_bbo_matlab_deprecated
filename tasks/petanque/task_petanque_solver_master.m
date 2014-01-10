@@ -20,14 +20,15 @@
 %   url    = {https://github.com/stulp/dmp_bbo}
 % }
 
-function [task_solver] = task_petanque_solver_cb(g,y0)
-if (nargin<1), g  = [  1.271  -0.468   0.283   1.553   0.296  -0.000   0.591  ]; end
-if (nargin<2), y0   = [-0.274 -0.221  0.112  0.149 -0.001  0.001  0.104]; end
+function [task_solver] = task_petanque_solver_master(g,y0)
+                       % R_SFE R_SAA  R_HR  R_EB  R_WR R_WFE R_WAA 
+if (nargin<1), g    = [ -0.40 -0.30  0.00  0.70  0.00  0.00  0.00  ]+0.1; end
+if (nargin<2), y0   = [  0.70 -0.30  0.00  2.00  0.00  0.00  0.00 ]; end
 
-task_solver.name = 'petanque_cb';
+task_solver.name = 'petanque_master';
 
-task_solver.perform_rollouts = @perform_rollout_petanque_solver_cb;
-task_solver.plot_rollouts = @plot_rollouts_petanque_solver_cb;
+task_solver.perform_rollouts = @perform_rollout_petanque_solver_master;
+task_solver.plot_rollouts = @plot_rollouts_petanque_solver_master;
 
 
 % Initial and goal state
@@ -52,11 +53,10 @@ task_solver.scales = abs(canonical_at_centers)/max(abs(canonical_at_centers));
 % Avoid zeros by adding a 10% baseline
 task_solver.scales = (task_solver.scales+0.01)/(1+0.01);
 
-
 addpath dynamicmovementprimitive/
 
-  function plot_rollouts_petanque_solver_cb(axes_handle,task,all_cost_vars)
-    cla(axes_handle)
+  function [handles] = plot_rollouts_petanque_solver_master(axes_handle,task,all_cost_vars)
+    %cla(axes_handle)
 
     n_samples = size(all_cost_vars,1);
     for k=1:n_samples
@@ -69,39 +69,46 @@ addpath dynamicmovementprimitive/
       plot3(ball_goal(1),ball_goal(2),ball_landed(3),'og')
       hold on
       every = 1:20:length(cost_vars);
-      plot3(cost_vars(every,4),cost_vars(every,5),cost_vars(every,6),'ok')
+      handles = plot3(cost_vars(every,4),cost_vars(every,5),cost_vars(every,6),'ok');
       plot3([ball_goal(1) ball_landed(1)],[ball_goal(2) ball_landed(2)],[ball_goal(3) ball_landed(3)],'-k')
       plot3(cost_vars(:,7),cost_vars(:,8),cost_vars(:,9),'-')
     end
     hold off
     axis equal
     axis tight
-    zlim([-0.8 1.5])
+    %zlim([-1.0 1.0])
+    axis([-0.5 0.5 -0.1 1.5 -1.0 0.5])
     drawnow
   end
 
 % Now comes the function that does the roll-out and visualization thereof
-  function [ cost_vars ] = perform_rollout_petanque_solver_cb(task,thetas)
+  function [ cost_vars ] = perform_rollout_petanque_solver_master(task,thetas)
    
     n_samples = size(thetas,2);
     for k=1:n_samples
       theta = squeeze(thetas(:,k,:));
       trajectories(k) = dmpintegrate(task_solver.y0,task_solver.g,theta,task_solver.time,task_solver.dt,task_solver.time_exec);
+      %plot(trajectories(k).t, trajectories(k).y)
+      %hold on
     end
-    directory = ['./data_' task.name];
+    %hold off
+    %pause
+    directory = ['./data_' task_solver.name];
     write_trajectories_to_ascii(directory,trajectories);
-
+    
     done_filename = sprintf('%s/done.txt',directory);
     if (exist(done_filename,'file'))
       delete(done_filename)
     end
 
     % zzz Provide functionality for writing misc else to file
-    filename = sprintf('%s/goal.txt',directory);
+    current_update = read_current_update(directory);
+    output_directory = sprintf('%s/%03d_update/rollouts',directory,current_update);
+    filename = sprintf('%s/goal.txt',output_directory);
     dlmwrite(filename,task.goal_ball,' ');
     
     % Run external program here
-    command = './tasks/petanque/task_petanque_external_sl/runcb';
+    command = './tasks/petanque/task_petanque_external_sl/runmasterng';
     fprintf('External program running... ');
     system(command);
     

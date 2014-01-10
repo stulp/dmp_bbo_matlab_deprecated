@@ -1,3 +1,25 @@
+% Author:  Freek Stulp, Robotics and Computer Vision, ENSTA-ParisTech
+% Website: http://www.ensta-paristech.fr/~stulp/
+% 
+% Permission is granted to copy, distribute, and/or modify this program
+% under the terms of the GNU General Public License, version 2 or any
+% later version published by the Free Software Foundation.
+% 
+% This program is distributed in the hope that it will be useful, but
+% WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+% Public License for more details
+%
+% If you use this code in the context of a publication, I would appreciate 
+% it if you could cite it as follows:
+%
+% @MISC{stulp_dmp_bbo,
+%   author = {Freek Stulp},
+%   title  = {dmp_bbo: Matlab library for black-box optimization of dynamical movement primitives.},
+%   year   = {2013},
+%   url    = {https://github.com/stulp/dmp_bbo}
+% }
+
 function [ trajectory handles_lines] = transformationintegrate(y0,g0,theta,xs,vs,dt,time,figure_handle)
 % Integrate one transformation system of a Dynamic Movement Primitive
 %
@@ -37,10 +59,11 @@ n_basis_functions = length(theta);
 %-------------------------------------------------------------------------------
 % Duration of the motion in time steps
 T = length(xs);
+ts = dt*(0:T-1)'; % time over time
 
 %-------------------------------------------------------------------------------
 % Compute basis function activations
-time_instead_of_phase=0;
+time_instead_of_phase=1;
 if (time_instead_of_phase)
   % Time signal is time
   ps = ts;
@@ -57,7 +80,6 @@ end
 
 % Compute activations
 activations = basisfunctionactivations(centers,widths,ps);
-
 
 %-------------------------------------------------------------------------------
 % Initialization
@@ -114,7 +136,6 @@ for tt=2:T
 
 end
 
-ts = dt*(0:T-1)'; % time over time
 trajectory.t = ts;
 trajectory.y = ys;
 trajectory.yd = yds;
