@@ -40,7 +40,7 @@ addpath dynamicmovementprimitive/
       ball_landed =  cost_vars(end,4:6);
       
       dist = sqrt(sum((ball_landed-ball_goal).^2));
-      cost = (100*dist);
+      cost = dist*dist;
 
       costs(k,:) = cost;
     end
