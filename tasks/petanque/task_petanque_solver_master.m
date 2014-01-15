@@ -22,9 +22,13 @@
 
 function [task_solver] = task_petanque_solver_master(g,y0)
                        % R_SFE R_SAA  R_HR  R_EB  R_WR R_WFE R_WAA 
-if (nargin<1), g    = [ -0.40 -0.30  0.00  0.70  0.00  0.00  0.00  ]+0.1; end
+if (nargin<1), g    = [ -0.40 -0.30  0.00  0.70  0.00  0.00  0.00  ]+0.2; end
 if (nargin<2), y0   = [  0.70 -0.30  0.00  2.00  0.00  0.00  0.00 ]; end
 
+                       %  X   Y    Z
+%if (nargin<1), g    = [ -0.40 -0.30  0.00  0.70  0.00  0.00  0.00  ]+0.1; end
+%if (nargin<2), y0   = [  0.4 0.1 -0.3 ]; end
+ 
 task_solver.name = 'petanque_master';
 
 task_solver.perform_rollouts = @perform_rollout_petanque_solver_master;
@@ -69,7 +73,8 @@ addpath dynamicmovementprimitive/
       plot3(ball_goal(1),ball_goal(2),ball_landed(3),'og')
       hold on
       every = 1:20:length(cost_vars);
-      handles = plot3(cost_vars(every,4),cost_vars(every,5),cost_vars(every,6),'ok');
+      handles = plot3(cost_vars(every,4),cost_vars(every,5),cost_vars(every,6),'.k','Color',0.8*[1 1 1]);
+      handles = plot3(cost_vars(end,4),cost_vars(end,5),cost_vars(end,6),'ok','MarkerFaceColor',[1 0 0],'MarkerSize',5);
       plot3([ball_goal(1) ball_landed(1)],[ball_goal(2) ball_landed(2)],[ball_goal(3) ball_landed(3)],'-k')
       plot3(cost_vars(:,7),cost_vars(:,8),cost_vars(:,9),'-')
     end
@@ -77,7 +82,8 @@ addpath dynamicmovementprimitive/
     axis equal
     axis tight
     %zlim([-1.0 1.0])
-    axis([-0.5 0.5 -0.1 1.5 -1.0 0.5])
+    axis([-0.5 0.5 -0.1 2 -1.0 0.5])
+    view(0,90)
     drawnow
   end
 
@@ -110,12 +116,12 @@ addpath dynamicmovementprimitive/
     % Run external program here
     command = './tasks/petanque/task_petanque_external_sl/runmasterng';
     fprintf('External program running... ');
-    system(command);
+    %system(command);
     
     % Wait for the file. A crude but simple way for communication.
     while (~exist(done_filename,'file'))
-      pause(0.1)
-      fprintf('.');
+      pause(0.001)
+      %fprintf('.');
     end
     fprintf('done.\n');
     
