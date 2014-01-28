@@ -73,8 +73,17 @@ addpath dynamicmovementprimitive/
       plot3(ball_goal(1),ball_goal(2),ball_landed(3),'og')
       hold on
       every = 1:20:length(cost_vars);
-      handles = plot3(cost_vars(every,4),cost_vars(every,5),cost_vars(every,6),'.k','Color',0.8*[1 1 1]);
-      handles = plot3(cost_vars(end,4),cost_vars(end,5),cost_vars(end,6),'ok','MarkerFaceColor',[1 0 0],'MarkerSize',5);
+      %handles = plot3(cost_vars(every,4),cost_vars(every,5),cost_vars(every,6),'.k','Color',0.8*[1 1 1]);
+      
+      disp(task.goal_ball)
+      ball_color = [1 1 0];
+      if (task.goal_ball(end)==1)
+        ball_color = [1 0 0];
+      end
+      if (task.goal_ball(end)==0.997)
+        ball_color = [0 0 1];
+      end
+      handles = plot3(cost_vars(end,4),cost_vars(end,5),cost_vars(end,6),'ok','MarkerFaceColor',ball_color,'MarkerSize',5);
       plot3([ball_goal(1) ball_landed(1)],[ball_goal(2) ball_landed(2)],[ball_goal(3) ball_landed(3)],'-k')
       plot3(cost_vars(:,7),cost_vars(:,8),cost_vars(:,9),'-')
     end
@@ -120,8 +129,8 @@ addpath dynamicmovementprimitive/
     
     % Wait for the file. A crude but simple way for communication.
     while (~exist(done_filename,'file'))
-      pause(0.001)
-      %fprintf('.');
+      pause(0.05)
+      fprintf('.');
     end
     fprintf('done.\n');
     
