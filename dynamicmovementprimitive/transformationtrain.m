@@ -71,7 +71,7 @@ f_target = (-alpha_z*(beta_z*(gs-trajectory.y)-trajectory.yd) + time*trajectory.
 time_instead_of_phase=1;
 if (time_instead_of_phase)
   % Time signal is time
-  ps = ts;
+  ps = trajectory.t;
   % Get centers and widths
   [centers widths] = basisfunctioncenters(n_basis_functions,time);
 else
