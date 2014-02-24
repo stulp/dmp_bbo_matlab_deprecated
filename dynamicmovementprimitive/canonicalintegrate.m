@@ -107,7 +107,7 @@ elseif (order==3)
 
   % Sigmoid for the hull
   final = 0.01;
-  sigmoid_time = 0.5*time;
+  sigmoid_time = 0.25*time;
   c = log((1/final)-1)/(0.5*sigmoid_time);
   vs = 1-(1./(1+exp(-c*(ts-time+0.5*sigmoid_time))));%.^(1/4);
   vds = -c*(1./(1+exp(-c*(ts-time+0.5*sigmoid_time)))).*(1-1./(1+exp(-c*(ts-time+0.5*sigmoid_time))));

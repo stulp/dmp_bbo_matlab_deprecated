@@ -1,0 +1,5 @@
+#!/bin/bash
+cd ~/prog/masterUser
+source ~/prog/config/SL-CONFIG.sh
+./x86_64/xmaster  -ng
+#./x86_64/xmaster

@@ -34,9 +34,6 @@ if (~exist(output_directory,'dir'))
 end
 
 n_samples = length(trajectories);
-filename = sprintf('%s/number_of_trials.txt',output_directory);
-dlmwrite(filename,n_samples,' ');
-
 for k=1:n_samples
 
   trajectory = trajectories(k);
@@ -49,4 +46,8 @@ for k=1:n_samples
   dlmwrite(filename,trajectory.ydd,' ');
 
 end
+
+filename = sprintf('%s/number_of_trials.txt',output_directory);
+dlmwrite(filename,n_samples,' ');
+
 end

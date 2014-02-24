@@ -27,6 +27,7 @@ addpath(genpath('evolutionaryoptimization'))
 addpath(genpath('fileio'))
 addpath(genpath('tasks'))
 if (exist('dealiasing','dir'))
+  disp('  adding dealiasing directory')
   addpath(genpath('dealiasing'))
 end
 if (exist('proximodistalmaturation','dir'))

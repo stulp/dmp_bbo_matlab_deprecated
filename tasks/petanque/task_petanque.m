@@ -21,7 +21,7 @@
 % }
 
 function [task] = task_petanque(goal_ball)
-if (nargin<1), goal_ball = zeros(1,3); end
+if (nargin<1), goal_ball = zeros(1,4); end
 
 task.name = 'petanque';
 task.goal_ball = goal_ball;
@@ -40,7 +40,7 @@ addpath dynamicmovementprimitive/
       ball_landed =  cost_vars(end,4:6);
       
       dist = sqrt(sum((ball_landed-ball_goal).^2));
-      cost = (100*dist);
+      cost = dist*dist;
 
       costs(k,:) = cost;
     end
