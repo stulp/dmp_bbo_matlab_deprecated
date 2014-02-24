@@ -1,5 +1,0 @@
-#!/bin/bash
-cd ~/prog/cbUser
-source ~/prog/config/SL-CONFIG.sh
-#./i486/xcb  -ng
-./i486/xcb
