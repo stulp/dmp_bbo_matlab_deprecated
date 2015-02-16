@@ -54,7 +54,7 @@ end
 
     % Get time and phase vector
     order = 1;
-    [ts xs xds vs vds alpha] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
+    [ts xs xds vs vds alpha] = canonicalintegrate(time,dt,time_exec,order); %#ok<ASGLU>
     N = ceil(1+time_exec/dt); % Number of time steps
     ts = dt*(0:N-1)';
 
@@ -88,7 +88,7 @@ end
           % 'Fake' the canonical system (not used for order 0)
           vs = ones(size(ts));
         else
-          [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
+          [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<ASGLU,NASGU>
         end
 
         % Plot basis functions, multiplied with canonical system

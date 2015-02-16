@@ -55,7 +55,7 @@ if (weighting_method==3)
 else
   weights = zeros(size(costs));
   K_e = eliteness;
-  [Ssorted indices] = sort(S,'ascend');
+  [Ssorted indices] = sort(S,'ascend'); %#ok<ASGLU>
   if (weighting_method==1)
     % Cross-Entropy Method weights
     weights(indices(1:K_e)) = 1;
@@ -81,8 +81,8 @@ weights = weights/sum(weights);
     all_weights = [];
     for i_weighting_method=1:3
       for i_eliteness=[5 10]
-        all_weights(end+1,:)  = coststoweights(costs,i_weighting_method,i_eliteness);
-        legend_labels{end+1} = sprintf('%s%d)',weighting_method_labels{i_weighting_method},i_eliteness);
+        all_weights(end+1,:)  = coststoweights(costs,i_weighting_method,i_eliteness); %#ok<AGROW>
+        legend_labels{end+1} = sprintf('%s%d)',weighting_method_labels{i_weighting_method},i_eliteness); %#ok<AGROW>
       end
     end
     clf

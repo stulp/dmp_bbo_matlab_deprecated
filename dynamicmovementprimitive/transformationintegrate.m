@@ -264,7 +264,7 @@ end
     time = 2;
     time_exec = 2*time;
     order = 3;
-    [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
+    [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<ASGLU,NASGU>
 
     % Integrate and plot a transformation system with random weights
     n_basis_functions = 8;

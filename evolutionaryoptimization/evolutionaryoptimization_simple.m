@@ -104,7 +104,7 @@ for i_update=1:20 % Do 20 updates
   [ distribution update_summary ] = update_distributions(distribution,samples,costs,update_parameters);
 
   % Bookkeeping and plotting
-  learning_history(i_update) = update_summary;
+  learning_history(i_update) = update_summary; %#ok<AGROW>
   plotlearninghistory(learning_history);
   
 end

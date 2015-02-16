@@ -95,7 +95,7 @@ sum_activations = repmat(sum(abs(activations),2)',n_basis_functions,1);
 activations_normalized = activations' ./ sum_activations;
 vs_activ_norm = vs_repmat.*activations_normalized;
 small_diag = diag(ones(n_basis_functions,1)*1e-10);
-AA = inv(vs_activ_norm*vs_activ_norm' + small_diag)*vs_activ_norm ;
+AA = inv(vs_activ_norm*vs_activ_norm' + small_diag)*vs_activ_norm ; %#ok<MINV>
 theta = (AA * f_target)';
 
 
@@ -106,7 +106,7 @@ if (figure_handle)
 
   % Execute and plot with the theta we have just computed
   dt = mean(diff(trajectory.t));
-  [traj handles ] = transformationintegrate(y0,g0,theta,xs,vs,dt,time,figure_handle);
+  [traj handles ] = transformationintegrate(y0,g0,theta,xs,vs,dt,time,figure_handle); %#ok<ASGLU>
 
   n_rows = 3;
   n_cols = 5;
@@ -151,7 +151,7 @@ end
     time = 2;
     time_exec = 3;
     order = 3;
-    [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
+    [ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<ASGLU,NASGU>
 
     % Integrate and plot a transformation system with random weights
     y0 = 5;

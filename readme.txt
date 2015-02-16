@@ -1,27 +1,17 @@
-NOTE: I am currently working on an object-oriented version of this 
-code in both Matlab and C++. This should come on-line on GitHub 
-early 2014. This new code will have a lot more features, and has 
-already been tested much more extensively than this "dmp_bbo" code. 
-So if you intend to use code like the one you can find here, I 
-suggest you wait a few weeks more and use the new and improved 
-version (send me an e-mail - you'll find me if you search for Freek 
-Stulp -- if you want to have details on the status, or be a 
-beta-tester for the upcoming code).
-
-Since this "dmp_bbo" code is not maintained or supported anymore, 
-I'll take it off-line shortly after the new release. Just so you 
-know.
- 
 ________________________________________________________________________________
 WHAT THIS CODE IS FOR
 
 This code is mainly intended to get started quickly and understand the 
 basic concepts of Dynamic Movement Primitives and Black-Box Optimization 
 of their shape parameters. It has been optimized for legibility, not 
-performance or mass of features. For instance, it does not (yet) allow 
-for the execution of policies off-line on a robot, and the evolution 
-paths of CMA-ES have also not (yet) been integrated yet.
+performance or mass of features. 
 
+If you are looking for code that has been optimized for functionality and 
+execution time, please have a look at the C++ code here: 
+https://github.com/stulp/dmpbbo
+
+If you want to read more about Dynamical Movement Primitives, check out my 
+tutorial here: https://github.com/stulp/dmpbbo/blob/master/docs/tutorial.pdf
 
 ________________________________________________________________________________
 HOW TO UNDERSTAND THIS CODE

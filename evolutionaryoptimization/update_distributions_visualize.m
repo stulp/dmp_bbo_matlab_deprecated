@@ -45,7 +45,7 @@ for i_dof=i_dofs
   weights_normalized = weights/max(weights);
   
   if (length(i_dofs)>1)
-    subplot_handles(i_dof) = subplot(1,n_dofs,i_dof);
+    subplot_handles(i_dof) = subplot(1,n_dofs,i_dof); %#ok<AGROW>
   end
   axis equal
   if (plot_samples)
