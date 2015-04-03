@@ -20,7 +20,7 @@
 %   url    = {https://github.com/stulp/dmp_bbo}
 % }
 
-function plotlearninghistory(learning_history,highlight,main_color)
+function plotlearninghistory(learning_history,highlight,main_color,keep_hold_on)
 % Plot the history of a learning session
 % Input:
 %   learning_history - the history (see evolutionaryoptimization.m)
@@ -29,6 +29,7 @@ function plotlearninghistory(learning_history,highlight,main_color)
 if (nargin==0), testplotlearninghistory; return; end
 if (nargin<2), highlight=0; end
 if (nargin<3), main_color=[0 0 0.8]; end
+if (nargin<4), keep_hold_on=0; end
 
 n_dofs = length(learning_history(1).distributions_new);
 n_dims = length(learning_history(1).distributions_new(1).mean);
@@ -112,7 +113,7 @@ for i_dof=1:plot_n_dofs %#ok<FXUP>
     plot(sort(costs),sort(weights,'descend'),'-','Color',0.8*ones(1,3))
     hold on
     plot(sort(costs),sort(weights,'descend'),'o','MarkerFaceColor',[0.5 0.5 1.0],'MarkerEdgeColor','k')
-    hold off
+    if ~keep_hold_on, hold off; end
 
     % Reposition subplots
     subplot_handle_1 = subplot(1,2,1);
@@ -148,6 +149,8 @@ for i_dof=1:plot_n_dofs %#ok<FXUP>
       xlabel('number of updates')
       ylabel('exploration magnitude')
     end
+    if keep_hold_on, hold on; end
+
   end
   
 end
@@ -192,7 +195,7 @@ else
   end
 end
 
-hold off
+if ~keep_hold_on, hold off; end
 axis square
 axis tight
 %xlim([1 n_updates])
