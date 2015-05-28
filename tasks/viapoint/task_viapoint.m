@@ -37,21 +37,31 @@ task.cost_function= @cost_function_viapoint;
     [n_rollouts n_time_steps n_cost_vars ] = size(cost_vars); %#ok<NASGU>
     viapoint_time_step = round(task.viapoint_time_ratio*n_time_steps);
     
-    ys = zeros(n_time_steps,n_cost_vars/3);
-    ydds = zeros(n_time_steps,n_cost_vars/3);
+    ys = zeros(n_time_steps,(n_cost_vars-1)/3);
+    ydds = zeros(n_time_steps,(n_cost_vars-1)/3);
     for k=1:n_rollouts
-      ys(:,:)   = squeeze(cost_vars(k,:,1:3:end));
-      ydds(:,:) = squeeze(cost_vars(k,:,3:3:end));
-
-      dist_to_viapoint = sqrt(sum((ys(viapoint_time_step,:)-task.viapoint).^2));
+      ys(:,:)   = squeeze(cost_vars(k,:,1:3:end-1));
+      ydds(:,:) = squeeze(cost_vars(k,:,3:3:end-1));
+      
+      if (task.viapoint_time_ratio<0)
+        % Choose the closes point along the trajectory
+        dist_to_viapoint = min(sqrt(sum((ys - repmat(task.viapoint,n_time_steps,1)).^2,2)));
+      else
+        dist_to_viapoint = sqrt(sum((ys(viapoint_time_step,:)-task.viapoint).^2));
+      end
       costs(k,2) = dist_to_viapoint;
 
       % Cost due to acceleration
       sum_ydd = sum((sum(ydds.^2,2)));
-      costs(k,3) = sum_ydd/100000;
+      costs(k,3) = 0*(sum_ydd/10000);
+
+      % Cost due to norm of parameters (regularization)
+      norm_theta = squeeze(cost_vars(k,1,end));
+      costs(k,4) = norm_theta/100;
 
       % Total cost is the sum of all the subcomponent costs
       costs(k,1) = sum(costs(k,2:end));
+      
     end
   end
 

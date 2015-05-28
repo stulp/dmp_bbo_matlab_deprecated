@@ -46,8 +46,8 @@ task_solver.n_dim = length(y0);
 
 % DMP settings related to time
 task_solver.time = 1;
-task_solver.dt = 1/50;
-task_solver.time_exec = 1.5;
+task_solver.dt = 1/25;
+task_solver.time_exec = 1.2;
 task_solver.n_time_steps = ceil(1+task_solver.time/task_solver.dt); % Number of time steps
 task_solver.n_time_steps_exec = ceil(1+task_solver.time_exec/task_solver.dt); % Number of time steps
 
@@ -61,7 +61,7 @@ addpath dynamicmovementprimitive/
     
     [ n_rollouts n_time_steps n_cost_vars ] = size(cost_vars);
     viapoint_time_step = round(task.viapoint_time_ratio*n_time_steps);
-
+    
     if (task_solver.n_dim==1)
       x = repmat(1:n_time_steps,n_rollouts,1);
       y = squeeze(cost_vars(:,:,1));
@@ -71,6 +71,9 @@ addpath dynamicmovementprimitive/
     elseif (task_solver.n_dim==2)
       x = squeeze(cost_vars(:,:,1));
       y = squeeze(cost_vars(:,:,4));
+      if (task.viapoint_time_ratio<0)
+        [min_dist viapoint_time_step ]= min(sqrt(sum((squeeze(cost_vars(:,:,[1 4])) - repmat(task.viapoint,n_time_steps,1)).^2,2)));
+      end
       x_via = task.viapoint(1);
       y_via = task.viapoint(2);
       
@@ -94,14 +97,15 @@ addpath dynamicmovementprimitive/
     %line_handles(3,:) =  plot(x(:,viapoint_time_step),y(:,viapoint_time_step),'o','Color',color,'LineWidth',linewidth);
     
     % Plot viapoint
-    plot(x_via,y_via,'o','MarkerFaceColor',[0.6 0.9 0.6],'MarkerSize',8,'MarkerEdgeColor',0.5*[1 1 1]);
+    plot(x_via,y_via,'o','MarkerFaceColor',[1 1 1],'MarkerSize',4,'MarkerEdgeColor',0.0*[1 1 1]);
+    %plot(x_via,y_via,'o','MarkerFaceColor',[0.6 0.9 0.6],'MarkerSize',8,'MarkerEdgeColor',0.5*[1 1 1]);
     hold off
     
     axis square
     axis tight
     
     if (task_solver.n_dim==1)
-      ylim([-0.1 1.1])
+      ylim([-0.15 1.15])
     else
       axis([-0.1 1.1 -0.1 1.1])
     end 
@@ -114,7 +118,7 @@ addpath dynamicmovementprimitive/
     n_basis_functions = size(thetas,3);
     n_dims = length(task_solver.g);
 
-    cost_vars = zeros(n_samples,task_solver.n_time_steps_exec,3*n_dims); % Compute n_time_steps and n_dims in constructor
+    cost_vars = zeros(n_samples,task_solver.n_time_steps_exec,3*n_dims+1); % Compute n_time_steps and n_dims in constructor
 
     theta = zeros(n_dims,n_basis_functions);
     for k=1:n_samples
@@ -123,9 +127,12 @@ addpath dynamicmovementprimitive/
       
       trajectory = dmpintegrate(task_solver.y0,task_solver.g,theta,task_solver.time,task_solver.dt,task_solver.time_exec,task_solver.order);
 
-      cost_vars(k,:,1:3:end) = trajectory.y;
-      cost_vars(k,:,2:3:end) = trajectory.yd;
-      cost_vars(k,:,3:3:end) = trajectory.ydd;
+      cost_vars(k,:,1:3:end-1) = trajectory.y;
+      cost_vars(k,:,2:3:end-1) = trajectory.yd;
+      cost_vars(k,:,3:3:end-1) = trajectory.ydd;
+
+      cost_vars(k,:,end) = norm(theta);
+      %cost_vars(k,:,end) = sum(abs(theta(:)))/length(theta(:));
 
     end
 
