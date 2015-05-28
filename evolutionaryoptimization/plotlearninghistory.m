@@ -20,7 +20,7 @@
 %   url    = {https://github.com/stulp/dmp_bbo}
 % }
 
-function plotlearninghistory(learning_history,highlight,main_color)
+function plotlearninghistory(learning_history,highlight,main_color,keep_hold_on)
 % Plot the history of a learning session
 % Input:
 %   learning_history - the history (see evolutionaryoptimization.m)
@@ -29,6 +29,7 @@ function plotlearninghistory(learning_history,highlight,main_color)
 if (nargin==0), testplotlearninghistory; return; end
 if (nargin<2), highlight=0; end
 if (nargin<3), main_color=[0 0 0.8]; end
+if (nargin<4), keep_hold_on=0; end
 
 n_dofs = length(learning_history(1).distributions_new);
 n_dims = length(learning_history(1).distributions_new(1).mean);
@@ -46,7 +47,7 @@ annotate_plots = (n_dofs<3);
 % Generate a circle for plotting
 % zzz Should be marker, as in update_distributions_visualization
 aaa = linspace(0,2*pi,20);
-circle = 3*[sin([aaa(end) aaa])' cos([aaa(end) aaa])'];
+circle = 3*[sin([aaa(end) aaa])' cos([aaa(end) aaa])']; %#ok<NASGU>
 
 % zzz highlight != plot_cost_to_weight
 
@@ -67,7 +68,7 @@ for i_dof=1:plot_n_dofs %#ok<FXUP>
   % Plot only most recent history entries
   n_most_recent_summaries = 10;
   
-  from_summary = max(1,length(learning_history)-n_most_recent_summaries+1);
+  from_summary = max(1,length(learning_history)-n_most_recent_summaries+1); %#ok<NASGU>
   colors = [linspace(0.95,main_color(1),n_most_recent_summaries)'...
             linspace(0.95,main_color(2),n_most_recent_summaries)'...
             linspace(0.95,main_color(3),n_most_recent_summaries)'...
@@ -104,7 +105,7 @@ for i_dof=1:plot_n_dofs %#ok<FXUP>
     box on
     %axis_range_2 = [range(costs) range(weights)]
     axis_range_2 = [1.3*range(costs) 0.6];
-    circle_scale = axis_range_2./axis_range_1;
+    circle_scale = axis_range_2./axis_range_1; %#ok<NASGU>
     
     for k=1:size(theta_eps,1)
       % zzz patch(costs(k)+circle_scale(1)*weights(k)*circle(:,1),weights(k)+circle_scale(2)*weights(k)*circle(:,2),[0.7 1 0.7],'EdgeColor','none')
@@ -112,7 +113,7 @@ for i_dof=1:plot_n_dofs %#ok<FXUP>
     plot(sort(costs),sort(weights,'descend'),'-','Color',0.8*ones(1,3))
     hold on
     plot(sort(costs),sort(weights,'descend'),'o','MarkerFaceColor',[0.5 0.5 1.0],'MarkerEdgeColor','k')
-    hold off
+    if ~keep_hold_on, hold off; end
 
     % Reposition subplots
     subplot_handle_1 = subplot(1,2,1);
@@ -136,7 +137,7 @@ for i_dof=1:plot_n_dofs %#ok<FXUP>
     % Plot exploration magnitude curve (largest eigenvalue of covar)
     for hh=1:length(learning_history)
       covar = learning_history(hh).distributions(i_dof).covar;
-      exploration_curve(hh,:) = real(max(eig(covar))); % HACK
+      exploration_curve(hh,:) = real(max(eig(covar))); %#ok<AGROW> % HACK
     end
     plot(exploration_curve,'LineWidth',2,'Color',main_color)
     axis tight
@@ -148,6 +149,8 @@ for i_dof=1:plot_n_dofs %#ok<FXUP>
       xlabel('number of updates')
       ylabel('exploration magnitude')
     end
+    if keep_hold_on, hold on; end
+
   end
   
 end
@@ -164,9 +167,9 @@ all_costs = [];
 costs_mean = [];
 n_rollouts_per_update = [];
 for hh=1:length(learning_history)
-  all_costs = [all_costs; learning_history(hh).costs];
-  costs_mean(hh,:) = mean(learning_history(hh).costs);
-  n_rollouts_per_update(hh) = size(learning_history(hh).costs,1);
+  all_costs = [all_costs; learning_history(hh).costs]; %#ok<AGROW>
+  costs_mean(hh,:) = mean(learning_history(hh).costs); %#ok<AGROW>
+  n_rollouts_per_update(hh) = size(learning_history(hh).costs,1); %#ok<AGROW>
   %std_costs_exploration(hh,:) = sqrt(var(learning_history(hh).costs));
 end
 
@@ -192,7 +195,7 @@ else
   end
 end
 
-hold off
+if ~keep_hold_on, hold off; end
 axis square
 axis tight
 %xlim([1 n_updates])
@@ -208,7 +211,7 @@ drawnow
     n_dofs = 1;
     n_samples=20;
     n_updates = 15;
-    for n_basisfunctions=2:4
+    for n_basisfunctions=2:2
       clear learning_history;
 
       for i_dof=1:n_dofs %#ok<FXUP>

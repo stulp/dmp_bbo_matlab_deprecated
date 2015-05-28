@@ -89,7 +89,7 @@ if (strcmp(update_parameters.weighting_method,'PI-BB'))
 elseif (strcmp(update_parameters.weighting_method,'CEM') || strcmp(update_parameters.weighting_method,'CMA-ES'))
   % CEM/CMA-ES style weights: rank-based, uses defaults
   mu = update_parameters.eliteness; % In CMA-ES, eliteness parameter is known as "mu"
-  [Ssorted indices] = sort(total_costs,'ascend');
+  [Ssorted indices] = sort(total_costs,'ascend'); %#ok<ASGLU>
   weights = zeros(size(total_costs));
   if (strcmp(update_parameters.weighting_method,'CEM'))
     weights(indices(1:mu)) = 1/mu;
@@ -103,7 +103,7 @@ else
   warning('Unknown weighting method number %s. Setting to "PI-BB".\n',update_parameters.weighting_method); %#ok<WNTAG>
   % Call recursively with fixed parameter
   update_parameters.weighting_method = 'PI-BB';
-  [ samples_new distributions_new ] = update_and_sample(samples,costs,distribution,update_parameters,n_samples);
+  [ samples_new distributions_new ] = update_and_sample(samples,costs,distribution,update_parameters,n_samples); %#ok<ASGLU>
   return;
 end
 
@@ -228,11 +228,11 @@ summary.distributions_new = distributions_new;
       update_parameters.covar_update = covar_updates{ff};
       figure_title = covar_updates{ff};
       if (ff==3)
-        figure_title = [ figure_title ' (diagonal covar update)'];
+        figure_title = [ figure_title ' (diagonal covar update)']; %#ok<AGROW>
       end
       if (ff>=4)
         update_parameters.covar_full = 1;
-        figure_title = [ figure_title ' (full covar update)'];
+        figure_title = [ figure_title ' (full covar update)']; %#ok<AGROW>
       end
 
       [ distributions_new summary ] = update_distributions(distributions,samples,costs,update_parameters);

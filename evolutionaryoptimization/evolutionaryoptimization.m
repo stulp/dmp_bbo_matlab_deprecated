@@ -66,13 +66,13 @@ if (isfield(update_parameters,'first_is_mean'))
   first_is_mean = update_parameters.first_is_mean;
 end
 
-[ n_dofs n_dims ] = size(theta_init); %#ok<NASGU>
+[ n_dofs n_dims ] = size(theta_init);
 if (ndims(covar_init)==2)
   covar_init = repmat(shiftdim(covar_init,-1),n_dofs,[]);
 end
 for i_dof=1:n_dofs
-  distributions(i_dof).mean  = theta_init(i_dof,:);
-  distributions(i_dof).covar = squeeze(covar_init(i_dof,:,:));
+  distributions(i_dof).mean  = theta_init(i_dof,:); %#ok<AGROW>
+  distributions(i_dof).covar = squeeze(covar_init(i_dof,:,:)); %#ok<AGROW>
 end
 
 plot_me = 1;
@@ -90,7 +90,7 @@ while (i_update<=n_updates)
   % Update parameters and sample next batch of thetas
   if (i_update>0)
     [ distributions update_summary ] = update_distributions(distributions,theta_eps,costs,update_parameters);
-    learning_history(i_update) = update_summary;
+    learning_history(i_update) = update_summary; %#ok<AGROW>
     if (save_update_summaries)
       write_update_summary(task.name,i_update,update_summary)
     end
@@ -150,7 +150,7 @@ save(sprintf('%s_learning_history.mat',task.name),'learning_history');
 % Done with optimizing. Return optimal (?) parameters
 % These are the means of the distributions for each dof
 for i_dof=1:n_dofs
-  theta_opt(i_dof,:) = distributions(i_dof).mean;
+  theta_opt(i_dof,:) = distributions(i_dof).mean; %#ok<AGROW>
 end
 
 % Main function done
@@ -187,7 +187,7 @@ end
 
     % Run optimization
     clf
-    [theta_opt learning_history] = evolutionaryoptimization(task,task_solver,theta_init,covar_init,n_updates,n_samples,update_parameters); %#ok<NASGU>
+    [theta_opt learning_history] = evolutionaryoptimization(task,task_solver,theta_init,covar_init,n_updates,n_samples,update_parameters);
 
     test_backwards_compatibility=0;
     if (test_backwards_compatibility)
@@ -198,7 +198,7 @@ end
         update_parameters.eliteness,update_parameters.weighting_method,update_parameters.covar_update,update_parameters.covar_bounds,update_parameters.covar_learning_rate,update_parameters.covar_scales);
     end
     
-    function [task_solver] = task_solver_min_dist(task)
+    function [task_solver] = task_solver_min_dist(task) %#ok<INUSD>
       task_solver.name = 'min_dist';
       task_solver.perform_rollouts = @perform_rollouts_min_dist;
 

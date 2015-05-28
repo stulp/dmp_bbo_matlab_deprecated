@@ -54,7 +54,7 @@ if (nargin<4), figure_handle = 0; end
 time = trajectory.t(end);
 time_exec = time;
 dt = mean(diff(trajectory.t));
-[ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<NASGU>
+[ts xs xds vs vds] = canonicalintegrate(time,dt,time_exec,order); %#ok<ASGLU,NASGU>
 
 % Prepare output variables
 n_trans = size(trajectory.y,2);
@@ -119,7 +119,7 @@ end
 
     % Generate a trajectory
     figure_handle = 1;
-    [ trajectory activations canonical_at_centers handle ] = dmpintegrate(y0,g,theta_known,time,dt,time_exec,order,figure_handle);
+    [ trajectory activations canonical_at_centers handle ] = dmpintegrate(y0,g,theta_known,time,dt,time_exec,order,figure_handle); %#ok<ASGLU>
     % Make original trajectories thick and bright
     set(handle,'LineWidth',3);
     set(handle,'Color',[0.7 0.7 1]);
@@ -127,7 +127,7 @@ end
     % Train a DMP with this trajectory
     [ theta y0 g0 ] = dmptrain(trajectory,order,n_basis_functions,figure_handle);
 
-    for ii=1:n_trans %#ok<FXUP>
+    for ii=1:n_trans
       figure(ii)
       n_rows=3;
       n_cols=5;

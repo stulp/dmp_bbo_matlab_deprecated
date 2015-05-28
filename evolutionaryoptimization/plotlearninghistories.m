@@ -27,7 +27,7 @@ function plotlearninghistories(learning_histories,task,task_solver)
 
 learning_history = learning_histories{1};
 n_dofs = length(learning_history(1).distributions_new);
-n_dim = length(learning_history(1).distributions_new(1).mean);
+n_dim = length(learning_history(1).distributions_new(1).mean); %#ok<NASGU>
 
 if (nargin<2)
   n_subplots = 2;
@@ -41,14 +41,14 @@ for curve_type=1:2
   for ii=1:length(learning_histories)
     learning_history = learning_histories{ii};
     for hh=1:length(learning_history)
-      for i_dof=1:n_dofs %#ok<FXUP>
+      for i_dof=1:n_dofs
         if (curve_type==1)
           % Plot exploration magnitude curve (largest eigenvalue of covar)
           covar = learning_history(hh).distributions(i_dof).covar;
-          curve(ii,hh) = real(max(eig(covar)));
+          curve(ii,hh) = real(max(eig(covar))); %#ok<AGROW>
         else
           % Plot learning curve
-          curve(ii,hh) = learning_history(hh).costs(1); % First cost is noise-free evaluation trial
+          curve(ii,hh) = learning_history(hh).costs(1); %#ok<AGROW> % First cost is noise-free evaluation trial
         end
       end
     end
@@ -83,7 +83,7 @@ for uu=1:n_updates
   for hh=1:length(learning_histories)
     thetas = (learning_histories{hh}(uu).samples(:,1,:));
     cost_vars = task_solver.perform_rollouts(task,thetas);
-    cost_vars_all(hh,:,:,:) = cost_vars;
+    cost_vars_all(hh,:,:,:) = cost_vars; %#ok<AGROW>
   end
   cost_vars_avg = (mean(cost_vars_all,1));
   cost_vars_std = (sqrt(var(cost_vars_all,1)));

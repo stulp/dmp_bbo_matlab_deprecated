@@ -60,7 +60,7 @@ update_parameters.eliteness           =      10;
 update_parameters.covar_update        = 'PI-BB'; % {'PI-BB','CMA-ES'}
 update_parameters.covar_full          =       0; % 0 -> diag, 1 -> full
 update_parameters.covar_learning_rate =     0.8; % No lowpass filter
-update_parameters.covar_bounds        =   [0.1 0.01]; %#ok<NBRAK> 
+update_parameters.covar_bounds        =   [0.1 0.01];
 
 clf
 evolutionaryoptimization(task,task_solver,task_solver.theta_init,covar_init,n_updates,n_samples,update_parameters)

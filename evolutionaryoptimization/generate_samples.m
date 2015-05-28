@@ -93,7 +93,7 @@ end
     
     % Plotting
     for i_dof=1:n_dofs %#ok<FXUP>
-      subplot_handles(i_dof) = subplot(1,n_dofs,i_dof);
+      subplot_handles(i_dof) = subplot(1,n_dofs,i_dof); %#ok<AGROW>
       plot(distributions(i_dof).mean(1),distributions(i_dof).mean(2),'ob');
       hold on
       error_ellipse(distributions(i_dof).covar,distributions(i_dof).mean);

@@ -30,12 +30,19 @@ function [ts xs xds vs vds alpha] = canonicalintegrate(time,dt,time_exec,order,a
 %   time          - duration of the observed movement
 %   dt            - duration of the integration step
 %   time_exec     - duration of the integration
-%   order         - order of the canonical system (1 or 3)
+%   order         - order of the canonical system 
+%                     order=1: 1st order system [1]
+%                     order=2: 2nd order system [1]
+%                     order=3: sigmoid system [2]
 %   alpha         - time constant, determined speed of convergence
+%
 % Output:
 %   ts            - time over time, i.e. 0.01, 0.02, 0.03 etc
 %   xs,xds,vs,vds - state of the canonical system over time
 %   alpha         - time constant, determines speed of convergence
+%
+% [1] Ijspeert, A.;Nakanishi, J.; Pastor, P; Hoffmann, H.; Schaal, S. (2013). Dynamical Movement Primitives: Learning Attractor Models forMotor Behaviors, Neural Computation, 25, pp.328-373 
+% [2] Kulvicius, T.; Ning, K.; Tamosiunaite, M. & Wörgötter, F. Joining Movement Sequences: Modified Dynamic Movement Primitives for Robotics Applications Exemplified on Handwriting IEEE Transactions on Robotics, 2012, 28, 145-157 
 
 if (nargin==0)
   % If no arguments are passed, test the function
